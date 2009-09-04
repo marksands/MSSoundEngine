@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////
 // Mark Sands
 // September, 4 2009
-// SAT - Simple Audio Toolkit
 // OpenAL/OpenGL test using alut and glut to render
 //	different polygons with sound.
 ////////////////////////////////////////////////////
@@ -18,6 +17,8 @@ typedef GLfloat point3D[3];
 typedef GLfloat point2D[2];
 
 GLfloat pi = 3.141592653;
+bool SOUND_PLAYING = true;
+OpenALManager::SAT *SoundFile;
 
 enum SHAPES_TO_DRAW { CIRCLE = 1, EMPTY = 2, TRIANGLE = 3, SQUARE = 4, PENTAGON = 5, HEXAGON = 6, HEPTAGON = 7, OCTOGON = 8,
 					  NONAGON, DECAGON, UNDECAGON, DODECAGON, TRIDECAGON, TETRADECAGON, PENTADECAGON = 15 };
@@ -29,6 +30,7 @@ void Display();
 void Menu(int id);
 void ColorMenu(int id);
 void ShapeMenu(int id);
+void SoundMenu(int id);
 void CreateMenus();
 
 // shapes
@@ -55,8 +57,8 @@ int main( int argc, char* argv[])
 
 void Myinit() {
 
-	InitSound("test.wav");
-	PlaySound();
+	SoundFile = new OpenALManager::SAT("test.wav");
+	SoundFile->PlaySound();
 
 	glClearColor(1.0,1.0,1.0,1.0);
 	glColor3f(0.0,1.0,0.0);
@@ -242,13 +244,60 @@ void ColorMenu(int id)
 	
 	glutPostRedisplay();
 }
+void SoundMenu(int id)
+{
+	switch(id)
+	{
+		case 1: // PAUSE
+			if ( SOUND_PLAYING ) {
+				SoundFile->PauseSound();
+				SOUND_PLAYING = false;
+			}
+			else {
+				SoundFile->PlaySound();
+				SOUND_PLAYING = true;
+			}
+			break;
 
+		case 2: //GravityHook
+				delete SoundFile;
+				SoundFile = new OpenALManager::SAT("test.wav");
+				SoundFile->PlaySound();
+			break;
+			
+		case 3: //master
+				delete SoundFile;
+				SoundFile = new OpenALManager::SAT("master.wav");
+				SoundFile->PlaySound();
+			break;
+			
+		case 4: //tetris
+				delete SoundFile;
+				SoundFile = new OpenALManager::SAT("tetris.wav");
+				SoundFile->PlaySound();
+			break;
+
+		case 5: //nship
+				delete SoundFile;
+				SoundFile = new OpenALManager::SAT("norm_ship.wav");
+				SoundFile->PlaySound();
+			break;
+
+		case 6: //pship
+				delete SoundFile;
+				SoundFile = new OpenALManager::SAT("power_ship.wav");
+				SoundFile->PlaySound();
+			break;
+	}
+}
 void Menu(int id)
 {
 	switch(id)
 	{
 		case 1: //EXIT
-			DeleteSound();
+			SoundFile->StopSound();
+			delete SoundFile;
+			
 			exit(1);
 			break;
 	}
@@ -256,7 +305,7 @@ void Menu(int id)
 
 void CreateMenus()
 {
-	GLint c_submenu, s_submenu;
+	GLint c_submenu, s_submenu, d_submenu;
 
 	c_submenu = glutCreateMenu(ColorMenu);
 		glutAddMenuEntry("Red",1);
@@ -281,10 +330,19 @@ void CreateMenus()
 		glutAddMenuEntry("Tridecagon",13);
 		glutAddMenuEntry("Tetradecagon",14);
 		glutAddMenuEntry("Pentadecagon",15);
+
+	d_submenu = glutCreateMenu(SoundMenu);
+		glutAddMenuEntry("Pause", 1);
+		glutAddMenuEntry("Song1", 2);
+		glutAddMenuEntry("Song2", 3);
+		glutAddMenuEntry("Song3", 4);
+		glutAddMenuEntry("Song4", 5);
+		glutAddMenuEntry("Song5", 6);
 		
 	glutCreateMenu(Menu);
 		glutAddSubMenu("Shape", s_submenu);
 		glutAddSubMenu("Color", c_submenu);
+		glutAddSubMenu("Sound", d_submenu);
 		glutAddMenuEntry("Exit",1);	
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
