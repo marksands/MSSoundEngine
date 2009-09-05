@@ -16,13 +16,14 @@ namespace OpenALManager {
 	class SAT {
 		public:
 			SAT( char* filename = "NA" );
+			SAT( char* filenames[] );
 			virtual ~SAT();
-			void PlaySound( bool flag = AL_TRUE);
-			void PauseSound();
-			void StopSound();
+			void Play( bool flag = AL_TRUE);
+			void Pause();
+			void Stop();
 		private:
-			bool InitSound();
-			void DeleteSound();	
+			bool Init();
+			void Delete();	
 			
 			ALCcontext *Context;
 			ALCdevice *Device;
@@ -36,6 +37,7 @@ namespace OpenALManager {
 			unsigned int alSampleSet;
 			
 			char* filename;
+			char* filenames[];
 	};
 
 	// Constructor loads filename and data members
@@ -45,33 +47,41 @@ namespace OpenALManager {
 		if ( filename == "NA" )
 			std::cerr << "Please specify a filename!";
 			
-		if ( !InitSound() )
-			std::cerr < "Failed to initialize OpenAL!";
+		if ( !Init() )
+			std::cerr << "Failed to initialize OpenAL!";
+	}
+
+	// Constructor loads filename array of songs and data members
+	SAT::SAT( char* filenames[] ) {
+		//SAT::filenames = filename;
+			
+		if ( !Init() )
+			std::cerr << "Failed to initialize OpenAL!";
 	}
 
 	// Destroy members for reinit
 	SAT::~SAT() {
-		DeleteSound();
+		Delete();
 	}
 
 	// OpenAL Play Sound
-	void SAT::PlaySound( bool flag ) {
+	void SAT::Play( bool flag ) {
 		alSourcei(alSource, AL_LOOPING, (flag ? AL_TRUE : AL_FALSE) );
 		alSourcePlay(alSource);
 	}
 	
 	// OpenAL Pause Sound
-	void SAT::PauseSound() {
+	void SAT::Pause() {
 		alSourcePause(alSource);
 	}
 	
 	// OpenAL Stop sound
-	void SAT::StopSound() {
+	void SAT::Stop() {
 		alSourceStop(alSource);
 	}
 	
-	// initialize OpenAL members	
-	bool SAT::InitSound() {
+	// initialize OpenAL and render sound
+	bool SAT::Init() {
 		Device = alcOpenDevice( (ALCchar*)"DirectSound3D" );
 		if (Device == NULL)
 			return false;
@@ -80,7 +90,6 @@ namespace OpenALManager {
 		alcMakeContextCurrent(Context);
 		alGetError();
 
-		// loads WAV from private member filename
 		alutLoadWAVFile( filename, &alFormatBuffer, (void**)&alBuffer, (ALsizei*)&alBufferLen, &alFreqBuffer, &alLoop );
 
 		alGenSources(1, &alSource);
@@ -111,7 +120,7 @@ namespace OpenALManager {
 	}
 
 	// OpenAL Delete sound	
-	void SAT::DeleteSound() {
+	void SAT::Delete() {
 		alDeleteSources(1, &alSource);
 		alDeleteBuffers(1, &alSampleSet);
 

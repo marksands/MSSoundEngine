@@ -58,7 +58,7 @@ int main( int argc, char* argv[])
 void Myinit() {
 
 	SoundFile = new OpenALManager::SAT("test.wav");
-	SoundFile->PlaySound();
+	SoundFile->Play();
 
 	glClearColor(1.0,1.0,1.0,1.0);
 	glColor3f(0.0,1.0,0.0);
@@ -70,15 +70,6 @@ void Myinit() {
 }
 
 void Display() {
-	
-	point3D t1 = { 0.0,   0.0, 0.0 };
-	point3D t2 = { 25.0, 50.0, 0.0 };
-	point3D t3 = { 50.0,  0.0, 0.0 };
-
-	point3D s1 = { 5.0,   5.0, 0.0 };
-	point3D s2 = { 45.0, 5.0, 0.0 };
-	point3D s3 = { 45.0,  45.0, 0.0 };
-	point3D s4 = { 5.0,  45.0, 0.0 };
 	
 	glClear(GL_COLOR_BUFFER_BIT);
 	
@@ -250,11 +241,11 @@ void SoundMenu(int id)
 	{
 		case 1: // PAUSE
 			if ( SOUND_PLAYING ) {
-				SoundFile->PauseSound();
+				SoundFile->Pause();
 				SOUND_PLAYING = false;
 			}
 			else {
-				SoundFile->PlaySound();
+				SoundFile->Play();
 				SOUND_PLAYING = true;
 			}
 			break;
@@ -262,31 +253,31 @@ void SoundMenu(int id)
 		case 2: //GravityHook
 				delete SoundFile;
 				SoundFile = new OpenALManager::SAT("test.wav");
-				SoundFile->PlaySound();
+				SoundFile->Play();
 			break;
 			
 		case 3: //master
 				delete SoundFile;
 				SoundFile = new OpenALManager::SAT("master.wav");
-				SoundFile->PlaySound();
+				SoundFile->Play();
 			break;
 			
 		case 4: //tetris
 				delete SoundFile;
 				SoundFile = new OpenALManager::SAT("tetris.wav");
-				SoundFile->PlaySound();
+				SoundFile->Play();
 			break;
 
 		case 5: //nship
 				delete SoundFile;
 				SoundFile = new OpenALManager::SAT("norm_ship.wav");
-				SoundFile->PlaySound();
+				SoundFile->Play();
 			break;
 
 		case 6: //pship
 				delete SoundFile;
 				SoundFile = new OpenALManager::SAT("power_ship.wav");
-				SoundFile->PlaySound();
+				SoundFile->Play();
 			break;
 	}
 }
@@ -295,7 +286,7 @@ void Menu(int id)
 	switch(id)
 	{
 		case 1: //EXIT
-			SoundFile->StopSound();
+			SoundFile->Stop();
 			delete SoundFile;
 			
 			exit(1);
