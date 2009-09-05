@@ -9,3 +9,43 @@ Usage:
 	SoundFile->Stop();
 
 	delete SoundFile;
+	
+Build Process:
+	I have yet to be able to get it to build properly on OS X, but I'm working on it. Getting some strange linker errors at the moment.
+	
+	In MS VC2008, add the source files to the project, all sound files, and even the openAL lib files.
+	You can't simply leave them in the directory, you have to manually add them to project.
+	It should work with no problems.
+	
+Current progress:
+	Currently working on a method to play more than one sound at the same time.
+
+	example of what not to do:
+	 SoundFile = new OpenALManager::SAT("file.wav");
+	 SoundFile2 = new OpenALManager::SAT("file2.wav");
+	
+	 SoundFile->Play();
+	 SoundFile2->Play();
+	
+	This WILL NOT work!!!
+	
+	Instead, the new method isn't written yet but it will go something like this.
+	It's up to the user to add error handling to the object. But if a song is played out of bounds, it just won't play a file.
+	Sounds will not render if the array has errors, and will return false and display cerr;
+	
+	#define SONG_1 0
+	#define GUN 1
+	#define EXPLOSION 2
+	
+	char* files[3] = { "file1.wav", "file2.wav", "file3.wav" };
+	Sounds = new OpenALManager::SAT( files );
+	
+	Sounds->Play( SONG );
+	Sounds->Play( GUN );
+	Sounds->Play( EXPLOSION );
+	
+	
+	
+	Hope this helps :)
+	
+	Mark
