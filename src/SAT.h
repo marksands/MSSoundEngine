@@ -8,11 +8,30 @@
 #ifndef SAT_H
 #define SAT_H
 
+#include <stdio.h>
+#include <stdlib.h>
 #include "al.h"
 #include "alc.h"
 #include "alut.h"
 
 namespace OpenALManager {
+	
+	typedef struct {
+	  char  riff[4];
+	  unsigned int riffSize;
+	  char  wave[4];
+	  char  fmt[4];
+	  unsigned int fmtSize;
+	  unsigned short format;
+	  unsigned short channels;
+	  unsigned int samplesPerSec;
+	  unsigned int bytesPerSec;
+	  unsigned short blockAlign;
+	  unsigned short bitsPerSample;
+	  char  data[4];
+	  unsigned int dataSize;
+	} SimpleWAVHeader;
+	
 	class SAT {
 		public:
 			SAT( char* filename = "NA" );
@@ -23,7 +42,10 @@ namespace OpenALManager {
 			void Stop();
 		private:
 			bool Init();
-			void Delete();	
+			void Delete();
+			
+			char* ReadWAV( char* filename, SimpleWAVHeader* header );
+			ALuint CreateBufferFromWav( char* data, SimpleWAVHeader header );	
 			
 			ALCcontext *Context;
 			ALCdevice *Device;
@@ -89,15 +111,15 @@ namespace OpenALManager {
 		Context = alcCreateContext(Device,NULL);
 		alcMakeContextCurrent(Context);
 		alGetError();
-
-		alutLoadWAVFile( filename, &alFormatBuffer, (void**)&alBuffer, (ALsizei*)&alBufferLen, &alFreqBuffer, &alLoop );
-
+		
+		// replaces the deprecated alutLoadWAVFromFile() function --
+		SimpleWAVHeader header;
+		char* data = ReadWAV( filename, &header );
+		ALuint buffer = CreateBufferFromWav( data, header );
+		
 		alGenSources(1, &alSource);
-		alGenBuffers(1, &alSampleSet);
-		alBufferData(alSampleSet, alFormatBuffer, alBuffer, alBufferLen, alFreqBuffer);
-		alSourcei(alSource, AL_BUFFER, alSampleSet);
-
-		alutUnloadWAV(alFormatBuffer, alBuffer, alBufferLen, alFreqBuffer);
+		alSourceQueueBuffers(alSource,1,&buffer);
+		// --
 
 		ALfloat xposition = 0.0, yposition = 0.0, zposition = 0.0,
 				xvelocity = 0.0, yvelocity = 0.0, zvelocity = 0.0;
@@ -121,6 +143,8 @@ namespace OpenALManager {
 
 	// OpenAL Delete sound	
 	void SAT::Delete() {
+		
+		alSourceUnqueueBuffers( alSource, 1, &alSampleSet);		
 		alDeleteSources(1, &alSource);
 		alDeleteBuffers(1, &alSampleSet);
 
@@ -130,6 +154,62 @@ namespace OpenALManager {
 		alcDestroyContext(Context);
 		alcCloseDevice(Device);	
 	}
+	
+	// Reads in the user's wav file into data
+	//  - Function borrowed and refactored from Gorax on gamedev.net
+	char* SAT::ReadWAV( char* filename, SimpleWAVHeader* header ) {
+
+		char* buffer = 0;
+		FILE* file = fopen(filename,"rb");
+
+		fread( header, sizeof(SimpleWAVHeader), 1, file );
+
+		if (!( 
+			memcmp("RIFF",header->riff,4) || 
+			memcmp("WAVE",header->wave,4) || 
+			memcmp("fmt ",header->fmt,4)  || 
+			memcmp("data",header->data,4)
+		))
+		{	
+			buffer = (char*)malloc(header->dataSize);
+
+			fread( buffer, header->dataSize, 1, file );
+			fclose(file);
+
+			return buffer;
+		}
+
+		free(buffer);
+		fclose(file);
+
+		return 0;
+	}
+
+	// Creates a WAV buffer from the wav data
+	//  - Function borrowed and refactored from Gorax on gamedev.net
+	ALuint SAT::CreateBufferFromWav( char* data, SimpleWAVHeader header ) {
+
+		ALuint buffer = 0;
+		ALuint format = 0;
+
+		switch ( header.bitsPerSample ) {
+			case 8:
+				format = (header.channels == 1) ? AL_FORMAT_MONO8 : AL_FORMAT_STEREO8;
+				break;
+			case 16:
+				format = (header.channels == 1) ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
+				break;
+			default:
+				return 0;
+		}
+
+		alGenBuffers( 1, &buffer );
+		alBufferData( buffer, format, data, header.dataSize, header.samplesPerSec );
+
+		return buffer;
+	}
+	
+	
 }
 
 #endif

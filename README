@@ -11,7 +11,12 @@ Usage:
 	delete SoundFile;
 	
 Build Process:
-	I have yet to be able to get it to build properly on OS X, but I'm working on it. Getting some strange linker errors at the moment.
+	On OS X I was finally able to get the project to build by running:
+	  g++ main.cpp -framework OpenGL -framework GLUT -framework OpenAL -framework Cocoa -arch ppc && ./a.out
+	
+	Specifying -arch ppc as the openAL SDK I installed apparently fails on intel architecture. I haven't found any solid
+	documentation online explaining anything, so shoot me an email if anyone can figure it out!
+	
 	
 	In MS VC2008, add the source files to the project, all sound files, and even the openAL lib files.
 	You can't simply leave them in the directory, you have to manually add them to project.
