@@ -2,13 +2,28 @@ A Simple Audio Toolkit used for executing trivial OpenAL function calls for basi
 A work in progress for CS 482 - Computer Graphics. (Adding sound for pizazz and brownie points)
 
 Usage:
-	OpenALManager::SAT *SoundFile = new OpenALManager::SAT("filename.wav");
-
-	SoundFile->Play();
-	SoundFile->Pause();
-	SoundFile->Stop();
-
+ - Updated version
+	
+	#define GUN_1 0
+	#define GUN_2 1
+ 	#define EXPLOSION 2
+	
+	char* files[3] = { "gun1.wav", "gun2.wav", "bomb.wav" };
+	
+	OpenALManager::SAT *Sounds = new OpenALManager::SAT( files, 3 );
+	OpenALManager::SAT *SoundFile = new OpenALManager::SAT("theme.wav");
+	
+	SoundFile->Play( true ); // loop song
+		
+	Sounds->Play( GUN_1 );
+	Sounds->Play( GUN_2 );
+	Sounds->Play( EXPLOSION );
+	
+	...
+	
+	delete Sounds;
 	delete SoundFile;
+	
 	
 Build Process:
 	On OS X I was finally able to get the project to build by running:
@@ -21,33 +36,6 @@ Build Process:
 	In MS VC2008, add the source files to the project, all sound files, and even the openAL lib files.
 	You can't simply leave them in the directory, you have to manually add them to project.
 	It should work with no problems.
-	
-Current progress:
-	Currently working on a method to play more than one sound at the same time.
-
-	example of what not to do:
-	 SoundFile = new OpenALManager::SAT("file.wav");
-	 SoundFile2 = new OpenALManager::SAT("file2.wav");
-	
-	 SoundFile->Play();
-	 SoundFile2->Play();
-	
-	This WILL NOT work!!!
-	
-	Instead, the new method isn't written yet but it will go something like this.
-	It's up to the user to add error handling to the object. But if a song is played out of bounds, it just won't play a file.
-	Sounds will not render if the array has errors, and will return false and display cerr;
-	
-	#define SONG_1 0
-	#define GUN 1
-	#define EXPLOSION 2
-	
-	char* files[3] = { "file1.wav", "file2.wav", "file3.wav" };
-	Sounds = new OpenALManager::SAT( files );
-	
-	Sounds->Play( SONG );
-	Sounds->Play( GUN );
-	Sounds->Play( EXPLOSION );
 	
 	
 	
