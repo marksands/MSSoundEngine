@@ -24,7 +24,7 @@ Usage:
 	
 	char* files[3] = { "gun1.wav", "gun2.wav", "bomb.wav", "theme.wav" };
 	
-	AudioPlayer *Sounds = new AudioPlayer( files, 4 );
+	MediaPlayer *Sounds = new AudioPlayer( files, 4 );
 	
 	Sounds->Play( THEME, true ); // loop song
 		
