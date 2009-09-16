@@ -1,19 +1,32 @@
 A Simple Audio Toolkit used for executing trivial OpenAL function calls for basic sound rendering.
 A work in progress for CS 482 - Computer Graphics. (Adding sound for pizazz and brownie points)
 
+
+Updates the Audio Player:
+
+  Should now play dynamic sounds.
+	For example, calling Sound->Play(BULLET); 10 times repeatedly will actually play
+	10 instances of the BULLET sound simultaneously, instead of the sound file repeating
+	each time.
+	
+  Also, changed the name from SAT to simply, Audio Player. I don't expect this library to
+    be anything significant other than what it does: Play Audio. So I've resorted into
+    keeping it merely for myself for future projects. This led me to changing the name
+    to something basic and resourceful. :)
+
 Usage:
  - Updated version
 	
 	#define GUN_1 0
 	#define GUN_2 1
  	#define EXPLOSION 2
+	#define THEME 3
 	
-	char* files[3] = { "gun1.wav", "gun2.wav", "bomb.wav" };
+	char* files[3] = { "gun1.wav", "gun2.wav", "bomb.wav", "theme.wav" };
 	
-	OpenALManager::SAT *Sounds = new OpenALManager::SAT( files, 3 );
-	OpenALManager::SAT *SoundFile = new OpenALManager::SAT("theme.wav");
+	AudioPlayer *Sounds = new AudioPlayer( files, 4 );
 	
-	SoundFile->Play( true ); // loop song
+	Sounds->Play( THEME, true ); // loop song
 		
 	Sounds->Play( GUN_1 );
 	Sounds->Play( GUN_2 );
