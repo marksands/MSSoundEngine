@@ -17,13 +17,12 @@
 
 class MediaPlayer {
 	public:
-		MediaPlayer();
 		virtual ~MediaPlayer() { }
 	
-		virtual Play( const int index = 1, bool looping = false) = 0;
-		virtual Pause( const int index = 1) = 0;
-		virtual Stop( const int index = 1) = 0;
-		virtual SetVolume( const int index = 1,  const float volume = 1.0f) = 0;		
+		virtual void Play( const int index = 1, bool looping = false) = 0;
+		virtual void Pause( const int index = 1) = 0;
+		virtual void Stop( const int index = 1) = 0;
+		virtual void SetVolume( const int index = 1,  const float volume = 1.0f) = 0;		
 };
 
 //***************************************************************************//
@@ -35,13 +34,7 @@ class MediaPlayer {
 //
 
 class WAVBuffer {
-	public:
-		WAVBuffer() { }
-		virtual ~WAVBuffer();
-		
-		char* ReadWAV( char* filename, SimpleWAVHeader* header );
-		ALuint CreateBufferFromWav( char* data, SimpleWAVHeader header );
-		
+
 	protected:
 		// WAVheader
 		typedef struct {
@@ -58,7 +51,13 @@ class WAVBuffer {
 		  unsigned short bitsPerSample;
 		  char  data[4];
 		  unsigned int dataSize;
-		} SimpleWAVHeader;			
+		} SimpleWAVHeader;		
+
+	public:
+		virtual ~WAVBuffer() { }
+		
+		char* ReadWAV( char* filename, SimpleWAVHeader* header );
+		ALuint CreateBufferFromWav( char* data, SimpleWAVHeader header );
 };
 	
 	
