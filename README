@@ -24,26 +24,26 @@ Usage:
 	
 	char* files[3] = { "gun1.wav", "gun2.wav", "bomb.wav", "theme.wav" };
 	
-	MediaPlayer *Sounds = new AudioPlayer( files, 4 );
+	MediaPlayer *Player = new AudioPlayer( files, 4 );
 	
-	Sounds->Play( THEME, true ); // loop song
+	Player->Play( THEME, true ); // loop song
 		
-	Sounds->Play( GUN_1 );
-	Sounds->Play( GUN_2 );
-	Sounds->Play( EXPLOSION );
+	Player->Play( GUN_1 );
+	Player->Play( GUN_2 );
+	Player->Play( EXPLOSION );
 	
 	...
 	
-	delete Sounds;
-	delete SoundFile;
-	
-	
+	delete Player;
+
+
 Build Process:
-	On OS X I was finally able to get the project to build by running:
-	  g++ main.cpp -framework OpenGL -framework GLUT -framework OpenAL -framework Cocoa -arch ppc && ./a.out
+	On OS X, you just specify '-framework OpenAL'
+	 g++ main.cpp -framework OpenGL -framework GLUT -framework Cocoa -framework OpenAL && ./a.out
 	
-	Specifying -arch ppc as the openAL SDK I installed apparently fails on intel architecture. I haven't found any solid
-	documentation online explaining anything, so shoot me an email if anyone can figure it out!
+	If you ran into problems like I did, you might have a bad OpenAL framework hiding in your Library. Just
+	go to /Library/Frameworks/ and rename OpenAL.framework to something like OpenAL-bad.framework and it
+	will find the right framework.
 	
 	
 	In MS VC2008, add the source files to the project, all sound files, and even the openAL lib files.
