@@ -9,7 +9,6 @@
 #include "al.h"
 #include "alc.h"
 
-
 //***************************************************************************//
 // MediaPlayer
 //	Abstract class holding common user instantiated media input methods.

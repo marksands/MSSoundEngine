@@ -14,7 +14,6 @@
 #include "alc.h"
 #include "MediaPlayer.h"
 
-
 //***************************************************************************//
 // AduioPlayer
 //	Main class for reading user audio files and producing the audio output
