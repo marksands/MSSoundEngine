@@ -32,6 +32,7 @@ Build Process
 -------------
 
 On OS X, you just specify `-framework OpenAL`
+
 example: `g++ main.cpp -framework OpenGL -framework GLUT -framework Cocoa -framework OpenAL && ./a.out`
 
 If you ran into problems like I did, you might have a bad OpenAL framework hiding in your Library. Just
