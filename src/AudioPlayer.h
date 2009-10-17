@@ -8,27 +8,39 @@
 #ifndef AUDIO_PLAYER_H
 #define AUDIO_PLAYER_H
 
+#ifdef _WIN32
+  #include "al.h"
+  #include "alc.h"
+#else
+  #include <OpenAL/al.h>
+  #include <OpenAL/alc.h>
+#endif
+
 #include <iostream>
 #include <vector>
-#include "al.h"
-#include "alc.h"
 #include "MediaPlayer.h"
+
 
 //***************************************************************************//
 // AduioPlayer
 //	Main class for reading user audio files and producing the audio output
 //  provides inherited member fuctions from MediaPlayer
 // 
-	class AudioPlayer: public MediaPlayer, public WAVBuffer {
+// TO-DO:
+//  Refactor
+//  
+
+
+	class AudioPlayer: public MediaPlayer {
 
 		public:
 			AudioPlayer( char* filenames[],  const int size = 1 );
 			virtual ~AudioPlayer();
 
-		void Play( const int index = 1, bool looping = false);
-		void Pause( const int index = 1);
-		void Stop( const int index = 1);
-		void SetVolume( const int index = 1,  const float volume = 1.0f);	
+			void Play( const int index = 1, bool looping = false);
+			void Pause( const int index = 1);
+			void Stop( const int index = 1);
+			void SetVolume( const int index = 1,  const float volume = 1.0f);	
 
 		protected:
 			bool InitSources();
@@ -40,12 +52,33 @@
 		
 			ALCcontext *Context;
 			ALCdevice *Device;
+
+			enum BUFFER_STATES {
+				BUFFER_IN_USE = 0x000001,
+				BUFFER_FREE   = 0x000002,
+			};
 		
 		private:
 			ALuint NUM_BUFFERS;
 			ALuint *Buffers;
 			ALuint *Sources;
-			
+			int playCount;
+
+			WAVBuffer WAVReader;
+
+			// The following to replace the following
+			class Source {
+			  public:
+				  ALfloat (*SourcesPos)[3];
+				  ALfloat (*SourcesVel)[3];
+			};
+			class Listener {
+			  public:
+				ALfloat position[3];
+				ALfloat velocity[3];
+				ALfloat orientation[6];
+			};
+
 			ALfloat (*SourcesPos)[3];
 			ALfloat (*SourcesVel)[3];
 			
@@ -53,9 +86,9 @@
 			ALfloat ListenerVel[3];
 			ALfloat ListenerOri[6];
 			
-			int* inuse;
 			char* filename;
 			std::vector<char*> audioFiles;
+			std::vector<int> inuse;
 	};
 
 	// Constructor loads filename array of songs and data members
@@ -77,47 +110,48 @@
 		void AudioPlayer::Play( int index, bool looping ) {
 			
 			CleanSources();
-
+			
 			int num = GetFreeSource();
-			ALuint buffer = CaptureBuffer( index );
+			
+			if ( num != -1 ) {
+				inuse[num] = BUFFER_IN_USE;
+				playCount++;
 
-			alSourceQueueBuffers( Sources[num], 1, &buffer );
-
-			alSourcei(Sources[num], AL_LOOPING, (looping ? AL_TRUE : AL_FALSE) );
-			alSourcePlay(Sources[num]);
+				ALuint buffer = CaptureBuffer( index );
+	
+				alSourceQueueBuffers( Sources[num], 1, &buffer );
+				alSourcei(Sources[num], AL_LOOPING, (looping ? AL_TRUE : AL_FALSE) );
+				alSourcePlay(Sources[num]);
+			}
 		}
 	
-
 		// you almost cant call these functions... very ambiguous?
 		//  especially with a dynamic sources container?
 
-		// OpenAL Pause Sound
+		// OpenAL Pause Sound, pauses all sounds in the buffer
 		void AudioPlayer::Pause( int index ) {
-			//alSourcePause(Sources[index]);
+			for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
+				alSourcePause( Sources[i] );
 		}
 
-		// OpenAL Stop sound
+		// OpenAL Stop sound, stops all sounds in the buffer
 		void AudioPlayer::Stop( int index ) {
-			//alSourceStop(Sources[index]);
+			for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
+				alSourceStop( Sources[i] );
 		}
 		
+		// OpenAL Set Volume, sets the volume from 0.0 to 1.0 (max)
 		void AudioPlayer::SetVolume( const int index,  const float volume) {
 			for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
-				alSourcei( Sources[i], AL_GAIN, volume );
+				alSourcei( Sources[i], AL_GAIN, volume > 0 ? 1.0 : volume );
 		}
 	
 	
 	ALuint AudioPlayer::GetFreeSource() {
 		
-		ALenum state;
-		
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
-			alGetSourcei( Sources[i], AL_SOURCE_STATE, &state );
-			if( state != AL_PLAYING ) {
-   				inuse[i] = 1;
-				std::cout << "Source pos: " << i << std::endl;
+			if ( inuse[i] == BUFFER_FREE )
 				return i;
-			}
 		}
 		
 		return -1;
@@ -125,44 +159,51 @@
 	
 	ALuint AudioPlayer::CaptureBuffer( int fileIndex ) {
 		
-		ALuint Buffer;
-		SimpleWAVHeader header;
+		ALuint buffer;
+		WAVBuffer::SimpleWAVHeader header;
 		
-		char* data = ReadWAV( audioFiles[fileIndex], &header );
-		Buffer = CreateBufferFromWav( data, header );
+		char* data = WAVReader.ReadWAV( audioFiles[fileIndex], &header );
+		buffer = WAVReader.CreateBufferFromWav( data, header );
 
-		return ( Buffer );
+		return ( buffer );
 	}
 	
-	// need to unqueue unplayed buffers here :)
+	// need to unqueue unplayed buffers here
 	void AudioPlayer::CleanSources()
 	{
-		ALenum state;
+		if ( playCount >= (int)NUM_BUFFERS/2 ) {
+			ALenum state;
 
-		for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
-			if ( inuse[i] == 1 ) {
+			for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
+				if ( inuse[i] == BUFFER_IN_USE ) {
 				alGetSourcei( Sources[i], AL_SOURCE_STATE, &state );
 				if ( state != AL_PLAYING ) {
-					alSourceStop( Sources[i] );
-					alSourcei( Sources[i], AL_BUFFER, 0 );
-					inuse[i] = 0;
-				}
-			}
+				  alSourceStop( Sources[i] );
+				  alSourcei( Sources[i], AL_BUFFER, NULL );
+				  inuse[i] = BUFFER_FREE;
+				  playCount--;
+			}}} // nasty :(
 		}
 	}
-	
 	
 	// initialize OpenAL and render sound
 	bool AudioPlayer::InitSources() {
 
-		NUM_BUFFERS = 32; 
-		inuse = new int[NUM_BUFFERS];
+		// maximum allowed sources
+		NUM_BUFFERS = 256; 
+		playCount = 0;
+
+		inuse.reserve(NUM_BUFFERS);
+		for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
+			inuse.push_back( BUFFER_FREE );
+		}
 
 		Buffers = new ALuint[NUM_BUFFERS];
 		Sources = new ALuint[NUM_BUFFERS];
 
 		SourcesPos = new ALfloat[NUM_BUFFERS][3];
 		SourcesVel = new ALfloat[NUM_BUFFERS][3];
+		//SourcesOri = new ALfloat[NUM_BUFFERS][6];
 
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++) {
 			for ( int j = 0; j < 3; j++ ) {
@@ -216,8 +257,6 @@
 
 	// OpenAL Delete sound	
 	void AudioPlayer::Delete() {
-		
-		delete [] inuse;
 
 		delete [] Buffers;
 		delete [] Sources;

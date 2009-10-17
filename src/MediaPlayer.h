@@ -1,17 +1,23 @@
 //***************************************************************************//
 // Copyright (c) 2009 Mark Sands. All rights reserved.
 //
+// Special thanks to Gorax on http://www.gamedev.net
 //
+
 #ifndef MEDIA_PlAYER_H
 #define MEDIA_PLAYER_H
 
-#include <stdio.h>
-#include "al.h"
-#include "alc.h"
+#ifdef _WIN32
+  #include "al.h"
+  #include "alc.h"
+#else
+  #include <OpenAL/al.h>
+  #include <OpenAL/alc.h>
+#endif
 
 //***************************************************************************//
 // MediaPlayer
-//	Abstract class holding common user instantiated media input methods.
+//	Abstract class holding common user instantiated media methods.
 // 
 
 class MediaPlayer {
@@ -28,13 +34,11 @@ class MediaPlayer {
 // WAVBuffer
 //	Extracts common WAV files into buffers for OpenAL.
 // 
-//  Shout out to Gorax on http://www.gamedev.net for his input
-//    on reading and creating the WAV buffer
 //
 
 class WAVBuffer {
 
-	protected:
+	public:
 		// WAVheader
 		typedef struct {
 		  char  riff[4];
@@ -52,7 +56,6 @@ class WAVBuffer {
 		  unsigned int dataSize;
 		} SimpleWAVHeader;		
 
-	public:
 		virtual ~WAVBuffer() { }
 		
 		char* ReadWAV( char* filename, SimpleWAVHeader* header );

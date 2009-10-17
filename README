@@ -1,22 +1,13 @@
+Audio-Player
+------------
+
 A Simple Audio Toolkit used for executing trivial OpenAL function calls for basic sound rendering.
 A work in progress for CS 482 - Computer Graphics. (Adding sound for pizazz and brownie points)
 
 
-Updates the Audio Player:
+Usage
+-----
 
-  Should now play dynamic sounds.
-	For example, calling Sound->Play(BULLET); 10 times repeatedly will actually play
-	10 instances of the BULLET sound simultaneously, instead of the sound file repeating
-	each time.
-	
-  Also, changed the name from SAT to simply, Audio Player. I don't expect this library to
-    be anything significant other than what it does: Play Audio. So I've resorted into
-    keeping it merely for myself for future projects. This led me to changing the name
-    to something basic and resourceful. :)
-
-Usage:
- - Updated version
-	
 	#define GUN_1 0
 	#define GUN_2 1
  	#define EXPLOSION 2
@@ -32,21 +23,22 @@ Usage:
 	Player->Play( GUN_2 );
 	Player->Play( EXPLOSION );
 	
-	...
+	// ...
 	
 	delete Player;
 
 
-Build Process:
-	On OS X, you just specify '-framework OpenAL'
-	 g++ main.cpp -framework OpenGL -framework GLUT -framework Cocoa -framework OpenAL && ./a.out
+Build Process
+-------------
+
+	*On OS X, you just specify '-framework OpenAL'
+	g++ main.cpp -framework OpenGL -framework GLUT -framework Cocoa -framework OpenAL && ./a.out
 	
-	If you ran into problems like I did, you might have a bad OpenAL framework hiding in your Library. Just
+	*If you ran into problems like I did, you might have a bad OpenAL framework hiding in your Library. Just
 	go to /Library/Frameworks/ and rename OpenAL.framework to something like OpenAL-bad.framework and it
 	will find the right framework.
 	
-	
-	In MS VC2008, add the source files to the project, all sound files, and even the openAL lib files.
+	*In MS VC2008, add the source files to the project, all sound files, and even the openAL lib files.
 	You can't simply leave them in the directory, you have to manually add them to project.
 	It should work with no problems.
 	
