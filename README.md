@@ -31,7 +31,7 @@ Usage
 Build Process
 -------------
 
-On OS X, you just specify '-framework OpenAL'
+On OS X, you just specify `-framework OpenAL`
 
 example: `g++ main.cpp -framework OpenGL -framework GLUT -framework Cocoa -framework OpenAL && ./a.out`
 
