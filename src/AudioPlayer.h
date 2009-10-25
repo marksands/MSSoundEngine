@@ -9,12 +9,15 @@
 #ifndef AUDIO_PLAYER_H
 #define AUDIO_PLAYER_H
 
-#ifdef _WIN32
+#if defined( __WIN32__ ) || defined( _WIN32 )
   #include "al.h"
-  #include "alc.h"
-#else
+  #include "alc.h"	
+#elif defined( __APPLE_CC__)
   #include <OpenAL/al.h>
   #include <OpenAL/alc.h>
+#else
+  #include <AL/al.h>
+  #include <AL/alc.h>
 #endif
 
 #include <iostream>
@@ -47,7 +50,6 @@
 	
 			void CleanSources();
 			ALuint GetFreeSource();
-			ALuint CaptureBuffer( int fileIndex );
 		
 			ALCcontext *Context;
 			ALCdevice *Device;
@@ -59,11 +61,8 @@
 		
 		private:
 			ALuint NUM_BUFFERS;
-			ALuint *Buffers;
-			ALuint *Sources;
+			ALuint *Buffers, *Sources;
 			int playCount;
-
-			WAVBuffer WAVReader;
 
 			// The following to replace the following
 			struct Source {
@@ -233,31 +232,6 @@
 		
 		return -1;
 	}
-
-
-	//
-	// Deprecated for future implementations. Use loadWAVFromFile( char* filename )instead
-	//
-	// CaptureBuffer( fileIndex )
-	// Last modified: 17Oct2009
-	//
-	// Default constructor lodas the filename array of songs
-	//
-	// Returns:      <none>
-	// Parameters:
-	//      fileIndex	   in   available source index from the sources buffer
-	//
-	
-	ALuint AudioPlayer::CaptureBuffer( int fileIndex ) {
-		
-		ALuint buffer;
-		WAVBuffer::SimpleWAVHeader header;
-		
-		char* data = WAVReader.ReadWAV( audioFiles[fileIndex], &header );
-		buffer = WAVReader.CreateBufferFromWav( data, header );
-
-		return ( buffer );
-	}
 	
 
 	//
@@ -409,6 +383,33 @@
 		alcDestroyContext(Context);
 		alcCloseDevice(Device);	
 	}
+	
+
+	// 
+	// static
+	// loadWAVFromFile( filename )
+	// Last modified: 25Oct2009
+	//
+	// A default function to load the wav
+	// via filename and return its buffer
+	//
+	// Returns:     ALuint buffer
+	// Parameters:
+	//      filename    in      the name of the wav file
+	//
+
+	static ALuint loadWAVFromFile( char* filename ) {
+
+		ALuint buffer;
+
+		WAVBuffer::SimpleWAVHeader header;
+		WAVBuffer parser;
+
+		char* data = parser.ReadWAV( filename, &header );
+		buffer = parser.CreateBufferFromWAV( data, header );
+
+		return buffer;	
+	}	
 	
 
 #endif

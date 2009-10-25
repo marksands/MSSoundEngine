@@ -7,12 +7,15 @@
 #ifndef MEDIA_PlAYER_H
 #define MEDIA_PLAYER_H
 
-#ifdef _WIN32
+#if defined( __WIN32__ ) || defined( _WIN32 )
   #include "al.h"
-  #include "alc.h"
-#else
+  #include "alc.h"	
+#elif defined( __APPLE_CC__)
   #include <OpenAL/al.h>
   #include <OpenAL/alc.h>
+#else
+  #include <AL/al.h>
+  #include <AL/alc.h>
 #endif
 
 //***************************************************************************//
@@ -138,34 +141,6 @@ ALuint WAVBuffer::CreateBufferFromWav( char* data, SimpleWAVHeader header ) {
 	alBufferData( buffer, format, data, header.dataSize, header.samplesPerSec );
 
 	return buffer;
-}
-
-
-
-
-//
-// loadWAVFromFile( filename )
-// Last modified: 25Oct2009
-//
-// A default function to load the wav
-// via filename and return its buffer
-//
-// Returns:     ALuint buffer
-// Parameters:
-//      filename    in      the name of the wav file
-//
-
-ALuint loadWAVFromFile( char* filename ) {
-	
-	ALuint buffer;
-	
-	WAVBuffer::SimpleWAVHeader header;
-	WAVBuffer parser;
-	
-	char* data = parser.ReadWAV( filename, &header );
-	buffer = parser.CreateBufferFromWAV( data, header );
-	
-	return buffer;	
 }
 
 #endif
