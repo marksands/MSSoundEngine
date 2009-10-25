@@ -1,6 +1,7 @@
 //***************************************************************************//
 // Copyright (c) 2009 Mark Sands. All rights reserved.
 // September, 4 2009
+//
 // Audio Player - a lightweight OpenAL toolkit for Audio playback
 //
 //***************************************************************************//
@@ -27,9 +28,7 @@
 //  provides inherited member fuctions from MediaPlayer
 // 
 // TO-DO:
-//  Refactor
 //  
-
 
 	class AudioPlayer: public MediaPlayer {
 
@@ -67,16 +66,14 @@
 			WAVBuffer WAVReader;
 
 			// The following to replace the following
-			class Source {
-			  public:
-				  ALfloat (*SourcesPos)[3];
-				  ALfloat (*SourcesVel)[3];
+			struct Source {
+			  ALfloat (*SourcesPos)[3];
+			  ALfloat (*SourcesVel)[3];
 			};
-			class Listener {
-			  public:
-				ALfloat position[3];
-				ALfloat velocity[3];
-				ALfloat orientation[6];
+			struct Listener {
+			  ALfloat position[3];
+			  ALfloat velocity[3];
+			  ALfloat orientation[6];
 			};
 
 			ALfloat (*SourcesPos)[3];
@@ -91,7 +88,18 @@
 			std::vector<int> inuse;
 	};
 
-	// Constructor loads filename array of songs and data members
+	//
+	// AudioPlayer( filenames, size )
+	// Last modified: 16Sep2009
+	//
+	// Default constructor lodas the filename array of songs
+	//
+	// Returns:              <none>
+	// Parameters:
+	//      filename  				   in   array of all the wav filenames
+	//      size      (optional) in   the size of the array, default to 1
+	//
+	
 	AudioPlayer::AudioPlayer(char *filenames[], const int size) {
 
 		for( int i = 0; i < size; i++ )
@@ -101,52 +109,121 @@
 			std::cerr << "Failed to initialize OpenAL!";
 	}
 
-	// Destroy members for reinit
+
+
+	//
+	// ~AudioPlayer()
+	// Last modified: 16Sep2009
+	//
+	// Default destructor calls the Delete() method
+	//
+	// Returns:     <none>
+	// Parameters: 	<none>
+	//
+
 	AudioPlayer::~AudioPlayer() {
 		Delete();
 	}
 
-		// OpenAL Play Sound
-		void AudioPlayer::Play( int index, bool looping ) {
-			
-			CleanSources();
-			
-			int num = GetFreeSource();
-			
-			if ( num != -1 ) {
-				inuse[num] = BUFFER_IN_USE;
-				playCount++;
+	//
+	// Play( index, looping )
+	// Last modified: 25Oct2009
+	//
+	// Method to play the specified file index
+	// This is where we want to queue our buffers
+	//
+	// Returns:     <none>
+	// Parameters: 	
+	//		index								 in		specified source from filenames array
+	//		optional	(optional) in		specifies wether or not to loop the source
+	//
 
-				ALuint buffer = CaptureBuffer( index );
-	
-				alSourceQueueBuffers( Sources[num], 1, &buffer );
-				alSourcei(Sources[num], AL_LOOPING, (looping ? AL_TRUE : AL_FALSE) );
-				alSourcePlay(Sources[num]);
-			}
-		}
-	
-		// you almost cant call these functions... very ambiguous?
-		//  especially with a dynamic sources container?
-
-		// OpenAL Pause Sound, pauses all sounds in the buffer
-		void AudioPlayer::Pause( int index ) {
-			for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
-				alSourcePause( Sources[i] );
-		}
-
-		// OpenAL Stop sound, stops all sounds in the buffer
-		void AudioPlayer::Stop( int index ) {
-			for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
-				alSourceStop( Sources[i] );
-		}
+	void AudioPlayer::Play( int index, bool looping ) {
 		
-		// OpenAL Set Volume, sets the volume from 0.0 to 1.0 (max)
-		void AudioPlayer::SetVolume( const int index,  const float volume) {
-			for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
-				alSourcei( Sources[i], AL_GAIN, volume > 0 ? 1.0 : volume );
+		CleanSources();
+		
+		int num = GetFreeSource();
+		
+		if ( num != -1 ) {
+			inuse[num] = BUFFER_IN_USE;
+			playCount++;
+
+			ALuint buffer = loadWAVFromFile( audioFiles[ fileinex ] );
+
+			alSourceQueueBuffers( Sources[num], 1, &buffer );
+			alSourcei(Sources[num], AL_LOOPING, (looping ? AL_TRUE : AL_FALSE) );
+			alSourcePlay(Sources[num]);
 		}
+	}
 	
 	
+
+	//
+	// Pause( index )
+	// Last modified: 17Oct2009
+	//
+	// Pauses all sounds in the buffer
+	//
+	// Returns:      <none>
+	// Parameters:
+	//		index			  	 in		specified source from filenames array
+	//
+
+
+	// OpenAL Pause Sound, pauses all sounds in the buffer
+	void AudioPlayer::Pause( int index ) {
+		for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
+			alSourcePause( Sources[i] );
+	}
+
+
+	//
+	// Stop( index )
+	// Last modified: 17Oct2009
+	//
+	// stops all sounds in the buffer
+	//
+	// Returns:     <none>
+	// Parameters:
+	//		index			    in		specified source from filenames array
+	//
+
+	// OpenAL Stop sound, stops all sounds in the buffer
+	void AudioPlayer::Stop( int index ) {
+		for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
+			alSourceStop( Sources[i] );
+	}
+	
+
+	//
+	// SetVolume( index, volume )
+	// Last modified: 17Oct2009
+	//
+	// sets the volume from 0.0 to 1.0 (max)
+	//
+	// Returns:     <none>
+	// Parameters:
+	//		index			    in		specified source from filenames array
+	//	 volume			    in	  the gain of the volume, 0.0 to 1.0
+	//
+
+	void AudioPlayer::SetVolume( const int index,  const float volume) {
+		for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
+			alSourcei( Sources[i], AL_GAIN, volume > 0 ? 1.0 : volume );
+	}
+
+
+	//
+	// GetFreeSource()
+	// Last modified: 17Oct2009
+	//
+	// Returns a free source from the sources buffer
+	//
+	// Returns:     <none>
+	// Parameters:
+	//							<none>
+	//
+
 	ALuint AudioPlayer::GetFreeSource() {
 		
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
@@ -156,6 +233,20 @@
 		
 		return -1;
 	}
+
+
+	//
+	// Deprecated for future implementations. Use loadWAVFromFile( char* filename )instead
+	//
+	// CaptureBuffer( fileIndex )
+	// Last modified: 17Oct2009
+	//
+	// Default constructor lodas the filename array of songs
+	//
+	// Returns:      <none>
+	// Parameters:
+	//      fileIndex	   in   available source index from the sources buffer
+	//
 	
 	ALuint AudioPlayer::CaptureBuffer( int fileIndex ) {
 		
@@ -168,6 +259,21 @@
 		return ( buffer );
 	}
 	
+
+	//
+	// CleanSources()
+	// Last modified: 17Oct2009
+	//
+	// Resets finished sources to a free and available state
+	// Be sure to unqueue the unplayed buffers here.
+	// Here I unqueue the beuffer by specifying the AL_BUFFER
+	// state to NULL.
+	//
+	// Returns:     <none>
+	// Parameters:
+	//							<none>
+	//
+
 	// need to unqueue unplayed buffers here
 	void AudioPlayer::CleanSources()
 	{
@@ -182,11 +288,29 @@
 				  alSourcei( Sources[i], AL_BUFFER, NULL );
 				  inuse[i] = BUFFER_FREE;
 				  playCount--;
-			}}} // nasty :(
+			}}}
 		}
 	}
 	
-	// initialize OpenAL and render sound
+
+	//
+	// InitSources()
+	// Last modified: 17Oct2009
+	//
+	//   Right now this is a nasty method
+	//   to initialize the sources from the
+	//   filenames array.
+	//   A lot of OpenAL initialize is done
+	//   here, which also sets up each 
+	//   listener and orientation position.
+	//   Also, be sure not to queue the buffers
+	//   here. That is only done during playback.
+	//
+	// Returns:   	  bool		true or false if an error occurs
+	// Parameters:
+	//							<none>
+	//
+
 	bool AudioPlayer::InitSources() {
 
 		// maximum allowed sources
@@ -229,7 +353,7 @@
 		alcMakeContextCurrent(Context);
 		alGetError();
 
-		// Load wav data into buffers.
+		// generate NUM_BUFFERS Buffers for use
 		alGenBuffers(NUM_BUFFERS, Buffers);
 
 		// set our empty buffers to NULL
@@ -237,6 +361,7 @@
 			Buffers[i] = NULL;
 		}
 
+		// generate NUM_BUFFERS Sources for use
 		alGenSources(NUM_BUFFERS, Sources);
 
 		// we don't queue our buffers here yet, only during the playback call
@@ -255,7 +380,20 @@
 		return true;
 	}
 
-	// OpenAL Delete sound	
+	//
+	// Delete()
+	// Last modified: 16Sep2009
+	//
+	// Deletes allocated memory buffers and sources
+	// deletes the OpenAL buffers and sources by
+	// calling the OpenAL methods, also destorys
+	// the playback device
+	//
+	// Returns:     <none>
+	// Parameters:
+	//      				<none>
+	//
+
 	void AudioPlayer::Delete() {
 
 		delete [] Buffers;

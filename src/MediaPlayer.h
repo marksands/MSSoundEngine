@@ -32,8 +32,7 @@ class MediaPlayer {
 
 //***************************************************************************//
 // WAVBuffer
-//	Extracts common WAV files into buffers for OpenAL.
-// 
+//	generic class to read in a wav file and and return the wav buffer
 //
 
 class WAVBuffer {
@@ -63,11 +62,18 @@ class WAVBuffer {
 };
 	
 	
-//***************************************************************************//
-// char* WAVBuffer::ReadWav( char* filename, SimpleWAVHeader* header ) { ... }
+
 //
-// Reads in the user's wav file into a buffer using a SimpleWAVheader 
-//  struct to read the WAV header and returns the buffer data
+// ReadWAV( filename, header )
+// Last modified: 04Sep2009
+//
+// the WAVBuffer method that reads the wav into the header
+// and returns the buffer data from the wav file
+//
+// Returns:     char* buffer (data)
+// Parameters:
+//      filename    in      the name of the wav file
+//      header      in      the wav header struct
 //
 
 char* WAVBuffer::ReadWAV( char* filename, SimpleWAVHeader* header ) {
@@ -98,10 +104,18 @@ char* WAVBuffer::ReadWAV( char* filename, SimpleWAVHeader* header ) {
 	return 0;
 }
 
-//************************************************************************************//
-// ALuint WAVBuffer::CreateBufferFromWav( char* data, SimpleWAVHeader header ) { ... }
+
 //
-// Creates an audio buffer from the WAV data specified by the data param
+// CreateBufferFromWav( data, header )
+// Last modified: 04Sep2009
+//
+// the WAVBuffer method that generates and creates
+// an audio buffer from the wav data
+//
+// Returns:     ALuint buffer
+// Parameters:
+//      data    in   the data buffer from the wav file
+//      header  in   the wav header struct
 //
 
 ALuint WAVBuffer::CreateBufferFromWav( char* data, SimpleWAVHeader header ) {
@@ -124,6 +138,34 @@ ALuint WAVBuffer::CreateBufferFromWav( char* data, SimpleWAVHeader header ) {
 	alBufferData( buffer, format, data, header.dataSize, header.samplesPerSec );
 
 	return buffer;
+}
+
+
+
+
+//
+// loadWAVFromFile( filename )
+// Last modified: 25Oct2009
+//
+// A default function to load the wav
+// via filename and return its buffer
+//
+// Returns:     ALuint buffer
+// Parameters:
+//      filename    in      the name of the wav file
+//
+
+ALuint loadWAVFromFile( char* filename ) {
+	
+	ALuint buffer;
+	
+	WAVBuffer::SimpleWAVHeader header;
+	WAVBuffer parser;
+	
+	char* data = parser.ReadWAV( filename, &header );
+	buffer = parser.CreateBufferFromWAV( data, header );
+	
+	return buffer;	
 }
 
 #endif
