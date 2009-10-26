@@ -3,8 +3,17 @@
 // September, 4 2009
 //
 // Audio Player - a lightweight OpenAL toolkit for Audio playback
+//	designed to encapsulate the low level audio handling
+//	and provide the user with a nice, easy to use
+//	high level application programming interface for
+//	sound rendering in their applications.
 //
 //***************************************************************************//
+//
+// TODO:
+//			create an MP3Buffer.h
+//			see: http://en.wikipedia.org/wiki/MP3#File_structure
+//
 
 #ifndef AUDIO_PLAYER_H
 #define AUDIO_PLAYER_H
@@ -22,16 +31,34 @@
 
 #include <iostream>
 #include <vector>
-#include "MediaPlayer.h"
+#include "altInternal.h"
+#include "WavBuffer.h"
+
+	//***************************************************************************//
+	// MediaPlayer
+	//	Abstract class holding common user instantiated media methods.
+	//
+	// Unneccesary class--optional for polymorphic tricks.
+	// 
+
+	class MediaPlayer {
+		public:
+			virtual ~MediaPlayer() { }
+		
+			virtual void Play( const int index = 1, bool looping = false) = 0;
+			virtual void Pause( const int index = 1) = 0;
+			virtual void Stop( const int index = 1) = 0;
+			virtual void SetVolume( const int index = 1,  const float volume = 1.0f) = 0;		
+
+			virtual void Load() = 0;
+	};
 
 
-//***************************************************************************//
-// AduioPlayer
-//	Main class for reading user audio files and producing the audio output
-//  provides inherited member fuctions from MediaPlayer
-// 
-// TO-DO:
-//  
+	//***************************************************************************//
+	// AduioPlayer
+	//	Main class for reading user audio files and producing the audio output
+	//  provides inherited member fuctions from MediaPlayer
+	//  
 
 	class AudioPlayer: public MediaPlayer {
 
@@ -44,48 +71,56 @@
 			void Stop( const int index = 1);
 			void SetVolume( const int index = 1,  const float volume = 1.0f);	
 
+			void Load();
 		protected:
 			bool InitSources();
 			void Delete();
-	
 			void CleanSources();
 			ALuint GetFreeSource();
 		
 			ALCcontext *Context;
 			ALCdevice *Device;
 
-			enum BUFFER_STATES {
-				BUFFER_IN_USE = 0x000001,
-				BUFFER_FREE   = 0x000002,
+			enum SOURCE_STATES {
+			  SOURCE_IN_USE,
+				SOURCE_FREE
 			};
 		
 		private:
-			ALuint NUM_BUFFERS;
-			ALuint *Buffers, *Sources;
-			int playCount;
+			static ALuint NUM_BUFFERS;
 
-			// The following to replace the following
-			struct Source {
-			  ALfloat (*SourcesPos)[3];
-			  ALfloat (*SourcesVel)[3];
-			};
-			struct Listener {
+			ALuint Buffers[256];
+			ALuint Sources[256];
+
+			typedef struct {
+			  ALuint INUSE;				
+			} _altSourceData;
+			_altSourceData altSourceData[256];
+
+			typedef struct {
+			  ALfloat position[256][3];
+			  ALfloat velocity[256][3];
+			} _altSource;
+			_altSource altSource;
+
+			typedef struct {
 			  ALfloat position[3];
 			  ALfloat velocity[3];
 			  ALfloat orientation[6];
-			};
+			} _altListener;
+			_altListener altListener;
 
-			ALfloat (*SourcesPos)[3];
-			ALfloat (*SourcesVel)[3];
-			
-			ALfloat ListenerPos[3];
-			ALfloat ListenerVel[3];
-			ALfloat ListenerOri[6];
-			
+			int playCount;
+
 			char* filename;
 			std::vector<char*> audioFiles;
-			std::vector<int> inuse;
 	};
+
+	ALuint AudioPlayer::NUM_BUFFERS = 256;
+
+	static
+	ALuint loadWAVFromFile( char* filename );
+
 
 	//
 	// AudioPlayer( filenames, size )
@@ -109,7 +144,6 @@
 	}
 
 
-
 	//
 	// ~AudioPlayer()
 	// Last modified: 16Sep2009
@@ -124,14 +158,35 @@
 		Delete();
 	}
 
+
+	//
+	// Load()
+	// Last modified: 26Oct2009
+	//
+	// Method to load all the audio sources into the Buffers
+	//
+	// Returns:     <none>
+	// Parameters: 	
+	//							<none>
+	//
+
+	void AudioPlayer::Load() {
+
+		for ( int i = 0; i < (int)audioFiles.size(); i++ ) {
+			Buffers[i] = loadWAVFromFile( audioFiles[ i ] );
+		}
+
+	}
+
+
 	//
 	// Play( index, looping )
-	// Last modified: 25Oct2009
+	// Last modified: 26Oct2009
 	//
 	// Method to play the specified file index
 	// This is where we want to queue our buffers
 	//
-	// Returns:     <none>
+	// Returns:            <none>
 	// Parameters: 	
 	//		index								 in		specified source from filenames array
 	//		optional	(optional) in		specifies wether or not to loop the source
@@ -144,12 +199,16 @@
 		int num = GetFreeSource();
 		
 		if ( num != -1 ) {
-			inuse[num] = BUFFER_IN_USE;
+			altSourceData[num].INUSE = SOURCE_IN_USE;
 			playCount++;
 
-			ALuint buffer = loadWAVFromFile( audioFiles[ fileinex ] );
+			// check if data hasn't been loaded into the Buffer
+			ALint value; alGetBufferi( Buffers[ index ], AL_SIZE, &value );
+			if ( value <= 0 )
+				Buffers[index] = loadWAVFromFile( audioFiles[ index ] );
 
-			alSourceQueueBuffers( Sources[num], 1, &buffer );
+			// set the source to the associated buffer
+			alSourceQueueBuffers( Sources[num], 1, &Buffers[ index ] );
 			alSourcei(Sources[num], AL_LOOPING, (looping ? AL_TRUE : AL_FALSE) );
 			alSourcePlay(Sources[num]);
 		}
@@ -214,7 +273,7 @@
 
 	//
 	// GetFreeSource()
-	// Last modified: 17Oct2009
+	// Last modified: 25Oct2009
 	//
 	// Returns a free source from the sources buffer
 	//
@@ -226,7 +285,7 @@
 	ALuint AudioPlayer::GetFreeSource() {
 		
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
-			if ( inuse[i] == BUFFER_FREE )
+			if ( altSourceData[i].INUSE == SOURCE_FREE )
 				return i;
 		}
 		
@@ -236,7 +295,7 @@
 
 	//
 	// CleanSources()
-	// Last modified: 17Oct2009
+	// Last modified: 25Oct2009
 	//
 	// Resets finished sources to a free and available state
 	// Be sure to unqueue the unplayed buffers here.
@@ -255,12 +314,12 @@
 			ALenum state;
 
 			for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
-				if ( inuse[i] == BUFFER_IN_USE ) {
+				if ( altSourceData[i].INUSE == SOURCE_IN_USE ) {
 				alGetSourcei( Sources[i], AL_SOURCE_STATE, &state );
 				if ( state != AL_PLAYING ) {
 				  alSourceStop( Sources[i] );
 				  alSourcei( Sources[i], AL_BUFFER, NULL );
-				  inuse[i] = BUFFER_FREE;
+				  altSourceData[i].INUSE = SOURCE_FREE;
 				  playCount--;
 			}}}
 		}
@@ -269,7 +328,7 @@
 
 	//
 	// InitSources()
-	// Last modified: 17Oct2009
+	// Last modified: 25Oct2009
 	//
 	//   Right now this is a nasty method
 	//   to initialize the sources from the
@@ -291,33 +350,24 @@
 		NUM_BUFFERS = 256; 
 		playCount = 0;
 
-		inuse.reserve(NUM_BUFFERS);
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
-			inuse.push_back( BUFFER_FREE );
+			altSourceData[i].INUSE = SOURCE_FREE;
 		}
-
-		Buffers = new ALuint[NUM_BUFFERS];
-		Sources = new ALuint[NUM_BUFFERS];
-
-		SourcesPos = new ALfloat[NUM_BUFFERS][3];
-		SourcesVel = new ALfloat[NUM_BUFFERS][3];
-		//SourcesOri = new ALfloat[NUM_BUFFERS][6];
 
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++) {
 			for ( int j = 0; j < 3; j++ ) {
-				SourcesPos[i][j] = 0.0;
-				SourcesVel[i][j] = 0.0;
+				altSource.position[i][j] = 0.0;
+				altSource.velocity[i][j] = 0.0;
 			}
 		}
 
 		for ( int i = 0; i < 3; i++ ) {
-			ListenerPos[i] = 0.0;
-			ListenerVel[i] = 0.0;
-			ListenerOri[i] = 0.0;			
+			altListener.position[i] = 0.0;
+			altListener.velocity[i] = 0.0;
+			altListener.orientation[i] = 0.0;			
 		}
-
-		ListenerOri[2] = 1.0;
-		ListenerOri[4] = -1.0;
+		altListener.orientation[2] = 1.0;
+		altListener.orientation[4] = -1.0;
 
 		Device = alcOpenDevice( (ALCchar*)"DirectSound3D" );
 		if (Device == NULL)
@@ -340,13 +390,13 @@
 
 		// we don't queue our buffers here yet, only during the playback call
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
-			alSourcefv(Sources[i], AL_POSITION, SourcesPos[0]);	
-			alSourcefv(Sources[i], AL_VELOCITY, SourcesVel[0]);
+			alSourcefv(Sources[i], AL_POSITION, altSource.position[0]);	
+			alSourcefv(Sources[i], AL_VELOCITY, altSource.velocity[0]);
 		}
 
-		alListenerfv(AL_POSITION,    ListenerPos);
-		alListenerfv(AL_VELOCITY,    ListenerVel);
-		alListenerfv(AL_ORIENTATION, ListenerOri);
+		alListenerfv(AL_POSITION,       altListener.position);
+		alListenerfv(AL_VELOCITY,       altListener.velocity);
+		alListenerfv(AL_ORIENTATION, altListener.orientation);
 	
 		if( alGetError() != AL_NO_ERROR)
 			return AL_FALSE;
@@ -358,23 +408,19 @@
 	// Delete()
 	// Last modified: 16Sep2009
 	//
-	// Deletes allocated memory buffers and sources
-	// deletes the OpenAL buffers and sources by
+	// Deletes the OpenAL buffers and sources by
 	// calling the OpenAL methods, also destorys
 	// the playback device
 	//
 	// Returns:     <none>
 	// Parameters:
-	//      				<none>
+	//      		    <none>
 	//
 
 	void AudioPlayer::Delete() {
 
-		delete [] Buffers;
-		delete [] Sources;
-		
-		alDeleteBuffers(NUM_BUFFERS, &Buffers[0]);
-		alDeleteSources(NUM_BUFFERS, &Sources[0]);
+		alDeleteBuffers(NUM_BUFFERS, Buffers);
+		alDeleteSources(NUM_BUFFERS, Sources);
 
 		Context = alcGetCurrentContext();
 		Device = alcGetContextsDevice(Context);
@@ -388,7 +434,7 @@
 	// 
 	// static
 	// loadWAVFromFile( filename )
-	// Last modified: 25Oct2009
+	// Last modified: 26Oct2009
 	//
 	// A default function to load the wav
 	// via filename and return its buffer
@@ -398,18 +444,18 @@
 	//      filename    in      the name of the wav file
 	//
 
-	static ALuint loadWAVFromFile( char* filename ) {
+	static
+	ALuint loadWAVFromFile( char* filename ) {
 
-		ALuint buffer;
+		ALuint buffer = 0;
 
 		WAVBuffer::SimpleWAVHeader header;
 		WAVBuffer parser;
 
 		char* data = parser.ReadWAV( filename, &header );
-		buffer = parser.CreateBufferFromWAV( data, header );
+		buffer = parser.CreateBufferFromWav( data, header );
 
 		return buffer;	
 	}	
-	
 
 #endif
