@@ -1,6 +1,6 @@
 /***
- * Copyright (c) 2009 Mark Sands. All rights reserved.
- * September, 4 2009
+ * Copyright (c) 2009, 2010 Mark Sands. All rights reserved.
+ * March, 27 2010
  *
  * bALt - Basic openAL Toolkit
  *

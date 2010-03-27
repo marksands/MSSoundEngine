@@ -1,4 +1,4 @@
-# balt
+# Balto
 
 Basic OpenAL Toolkit - a simple audio toolkit used for executing trivial OpenAL function calls for
 basic sound rendering. A work in progress for CS 482 - Computer Graphics. Adding sound for pizazz
