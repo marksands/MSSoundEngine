@@ -7,7 +7,6 @@
 #ifndef WAV_BUFFER_H
 #define WAV_BUFFER_H
 
-#include "altInternal.h"
 #if defined( __WIN32__ ) || defined( _WIN32 )
   #include "al.h"
   #include "alc.h"	

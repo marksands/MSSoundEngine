@@ -39,7 +39,6 @@ If you ran into problems like I did, you might have a bad OpenAL framework hidin
 go to /Library/Frameworks/ and rename OpenAL.framework to something like OpenAL-bad.framework and it
 will find the right framework.
 
-
 In MS VC2008, add the source files to the project, all sound files, and even the openAL lib files.
 You can't simply leave them in the directory, you have to manually add them to project.
 It should work with no problems.
