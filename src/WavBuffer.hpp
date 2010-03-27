@@ -69,12 +69,8 @@ char* WAVBuffer::ReadWAV( char* filename, SimpleWAVHeader* header ) {
 
 	char* buffer = 0;
 	FILE* file;
-	errno_t err;
 
-	if( (err = fopen_s(&file, filename, "rb")) != 0) {
-		printf("Audio rendering aborted! Failed to read %s\n", filename);
-	}
-	else {
+	if( file = fopen(filename, "rb") ) {
 
 		fread( header, sizeof(SimpleWAVHeader), 1, file );
 
@@ -96,7 +92,10 @@ char* WAVBuffer::ReadWAV( char* filename, SimpleWAVHeader* header ) {
 		free(buffer);
 		fclose(file);
 	}
-
+	else {
+		printf("Audio rendering aborted! Failed to read %s\n", filename);
+	}
+	
 	return 0;
 }
 
