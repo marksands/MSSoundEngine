@@ -6,25 +6,37 @@ and brownie points.
 
 ## Usage
 
-	#define GUN_1 0
-	#define GUN_2 1
- 	#define EXPLOSION 2
-	#define THEME 3
+Add files to a char* array.
 	
 	char* files[3] = { "gun1.wav", "gun2.wav", "bomb.wav", "theme.wav" };
 	
+Instantiate a new AudioPlayer object. The constructor takes the char* array of files as 
+its parameter along with the size of the array.
+	
 	MediaPlayer *Player = new AudioPlayer( files, 4 );
 	
-	Player->Play( THEME, true ); // loop song
-		
-	Player->Play( GUN_1 );
-	Player->Play( GUN_2 );
+Play the theme song. Optionally set the loop flag to true.
+	
+	Player->Play( THEME, true );
+	
+Play a sound effect in sync with the theme and such; or pause all sounds.
+	
 	Player->Play( EXPLOSION );
 	
-	// ...
+		// ...
 	
-	delete Player;
+	Player->Pause();
+	
+Feel free to alter the sound, too.
 
+		// Set volume to half
+	Player->SetVolume( 0.5 );
+	
+You can even stop the player.
+
+	Player->Stop();
+	
+Check out the sample code in the examples directory.
 
 ## Build Process
 
