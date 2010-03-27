@@ -1,132 +1,14 @@
-/***
- * Copyright (c) 2009 Mark Sands. All rights reserved.
- * September, 4 2009
- *
- * bALt - Basic openAL Toolkit
- *
- * bALt - a lightweight OpenAL toolkit for Audio playback
- *	designed to encapsulate the low level audio handling
- *	and provide the user with a nice, easy to use
- *	high level application programming interface for
- *	sound rendering in their applications.
- *
- ***
- *
- * TODO:
- *			create an MP3Buffer.h
- *			see: http://en.wikipedia.org/wiki/MP3#File_structure
- ***/
+//
+//  sound.m
+//  sound
+//
+//  Created by Mark Sands on 3/27/10.
+//  Copyright 2010 Apple Inc. All rights reserved.
+//
 
-#ifndef BALT_H_KBA7BAQ2
-#define BALT_H_KBA7BAQ2
+#import "balt.h"
 
-#if defined( __WIN32__ ) || defined( _WIN32 )
-  #include "al.h"
-  #include "alc.h"	
-#elif defined( __APPLE_CC__)
-  #include <OpenAL/al.h>
-  #include <OpenAL/alc.h>
-#else
-  #include <AL/al.h>
-  #include <AL/alc.h>
-#endif
-
-#include <iostream>
-#include <vector>
-#include "WavBuffer.hpp"
-
-	/*
-	* MediaPlayer
-	*	 Abstract class holding common user instantiated media methods.
-	*
-	*  Unneccesary class--optional for polymorphic tricks.
-	*
-	*/ 
-
-	class MediaPlayer {
-		public:
-			virtual ~MediaPlayer() { }
-		
-			virtual void Play( const int index = 1, bool looping = false) = 0;
-			virtual void Pause( const int index = 1) = 0;
-			virtual void Stop( const int index = 1) = 0;
-			virtual void SetVolume( const int index = 1,  const float volume = 1.0f) = 0;		
-
-			virtual void Load() = 0;
-	};
-
-
-	/*
-	 * AduioPlayer
-	 * 	Main class for reading user audio files and producing the audio output
-	 * 	provides inherited member fuctions from MediaPlayer
-	 *
-	 */ 
-
-	class AudioPlayer: public MediaPlayer {
-
-		public:
-			AudioPlayer( char* filenames[],  const int size = 1 );
-			virtual ~AudioPlayer();
-
-			void Play( const int index = 1, bool looping = false);
-			void Pause( const int index = 1);
-			void Stop( const int index = 1);
-			void SetVolume( const int index = 1,  const float volume = 1.0f);	
-
-			void Load();
-		protected:
-			bool InitSources();
-			void Delete();
-			void CleanSources();
-			ALuint GetFreeSource();
-		
-			ALCcontext *Context;
-			ALCdevice *Device;
-
-			enum SOURCE_STATES {
-			  SOURCE_IN_USE,
-				SOURCE_FREE
-			};
-		
-		private:
-			const ALuint NUM_BUFFERS;
-
-			ALuint Buffers[256];
-			ALuint Sources[256];
-
-			typedef struct {
-			  ALuint INUSE;				
-			} altSourceData_;
-			altSourceData_ altSourceData[256];
-
-			typedef struct {
-			  ALfloat position[256][3];
-			  ALfloat velocity[256][3];
-			} altSource_;
-			altSource_ altSource;
-
-			typedef struct {
-			  ALfloat position[3];
-			  ALfloat velocity[3];
-			  ALfloat orientation[6];
-			} altListener_;
-			altListener_ altListener;
-
-			int playCount;
-
-			char* filename;
-			std::vector<char*> audioFiles;
-	};
-	
-
-	/*
-	 *  helper function prototypes
-	 */
-	
-	static
-	ALuint loadWAVFromFile( char* filename );
-
+@implementation AudioPlayer
 
 	/*
 	 * AudioPlayer( filenames, size )
@@ -352,7 +234,7 @@
 
 	/*
 	 * InitSources()
-	 * Last modified: 26Mar2010
+	 * Last modified: 25Oct2009
 	 *
 	 * Right now this is a nasty method
 	 * to initialize the sources from the
@@ -480,6 +362,6 @@
 		buffer = parser.CreateBufferFromWav( data, header );
 
 		return buffer;	
-	}	
+	}
 
-#endif /* end of include guard: BALT_H_KBA7BAQ2 */
+@end
