@@ -31,8 +31,6 @@
 
 @interface Balto : NSObject {
 	
-	// public: //
-	
 	ALCcontext *Context;
 	ALCdevice *Device;
 	
@@ -41,15 +39,12 @@
 		SOURCE_FREE
 	} SOURCE_STATES;
 	
-	// private: //
-	
-	// 256
 	ALuint NUM_BUFFERS;
 	
 	ALuint Buffers[256];
 	ALuint Sources[256];
 	
-	NSMutableArray *SourceData; // INUSE
+	NSMutableArray *SourceData;
 		
 	int playCount;
 	char* filename;
@@ -57,20 +52,16 @@
 	NSMutableArray *audioFiles;
 }
 
-//@property (nonatomic) ALuint *Buffers;
-//@property (nonatomic) ALuint *Sources;
 
-// public:
-- (id) init: withFilename:(NSArray*)filenames andSize:(int)size;
+- (id) initWithFilename:(NSMutableArray*)filenames andSize:(int)size;
 
-- (void) Play: withIndex:(int)index andLooping:(BOOL)looping;
-- (void) Pause: withIndex:(int)index;
-- (void) Stop: withIndex:(int)index;
-- (void) SetVolume: withIndex:(int)index andVolume:(float)volume;	
+- (void) PlayWithIndex:(int)index andLooping:(BOOL)looping;
+- (void) PauseWithIndex:(int)index;
+- (void) StopWithIndex:(int)index;
+- (void) SetVolumeWithIndex:(int)index andVolume:(float)volume;	
 
 - (void) Load;
 
-// protected:
 
 - (BOOL) InitSources;
 - (void) Delete;

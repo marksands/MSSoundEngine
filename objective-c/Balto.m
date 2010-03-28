@@ -20,7 +20,7 @@
 #import "Balto.h"
 
 // WAVheader
-struct SimpleWAVHeader {
+typedef struct SimpleWAVHeader {
 	char  riff[4];
 	unsigned int riffSize;
 	char  wave[4];
@@ -50,7 +50,7 @@ struct SimpleWAVHeader {
 //      header      in      the wav header struct
 //
 
-char* ReadWAV( char* filename, SimpleWAVHeader* header ) {
+char* ReadWAV( char *filename, SimpleWAVHeader *header ) {
 	
 	char* buffer = 0;
 	FILE* file;
@@ -174,7 +174,7 @@ ALuint loadWAVFromFile( char* filename ) {
  *
  */
 
-- (id) init: withFilename:(NSArray*)filenames andSize:(int)size {
+- (id) initWithFilename:(NSMutableArray*)filenames andSize:(int)size {
 	
 	for(NSString *fname in filenames)
 		[audioFiles addObject:fname];
@@ -242,7 +242,7 @@ ALuint loadWAVFromFile( char* filename ) {
  */
 
 
-- (void) Play: withIndex:(int)index andLooping:(BOOL)looping
+- (void) PlayWithIndex:(int)index andLooping:(BOOL)looping
 {	
 	[self CleanSources];
 	
@@ -281,7 +281,7 @@ ALuint loadWAVFromFile( char* filename ) {
 
 
 // OpenAL Pause Sound, pauses all sounds in the buffer
-- (void) Pause: withIndex:(int)index
+- (void) PauseWithIndex:(int)index
 {
 	for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
 		alSourcePause( Sources[i] );
@@ -301,7 +301,7 @@ ALuint loadWAVFromFile( char* filename ) {
  */
 
 // OpenAL Stop sound, stops all sounds in the buffer
-- (void) Stop: withindex:(int)index
+- (void) StopWithindex:(int)index
 {
 	for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
 		alSourceStop( Sources[i] );
@@ -321,7 +321,7 @@ ALuint loadWAVFromFile( char* filename ) {
  *
  */
 
-- (void) SetVolume: withIndex:(int)index andVolume:(float)volume
+- (void) SetVolumeWithIndex:(int)index andVolume:(float)volume
 {
 	for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
 		alSourcei( Sources[i], AL_GAIN, volume );
