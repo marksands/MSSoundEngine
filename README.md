@@ -1,8 +1,8 @@
 # Balto
 
-Basic OpenAL Toolkit - a simple audio toolkit used for executing trivial OpenAL function calls for
-basic sound rendering. A work in progress for CS 482 - Computer Graphics. Adding sound for pizazz
-and brownie points.
+### What is Balto?
+
+Balto is a lightweight OpenAL toolkit for Audio playback designed to encapsulate the low level audio handling and provide the user with a nice, easy to use high level application programming interface for sound rendering in their applications.
 
 ## Usage
 
@@ -40,10 +40,19 @@ Check out the sample code in the examples directory.
 
 ## Build Process
 
-On OS X, you just specify `-framework OpenAL`
+On OS X, you just specify the `-framework OpenAL` option
 
-example: `g++ main.cc -framework OpenAL && ./a.out`
+	g++ main.cc -framework OpenAL && ./a.out
 
-In MSVC++, add everything to the project, including all source files, all sound files,
-and the openAL lib files. Unlike glut, for example, you can't simply leave them in the 
-directory, you have to manually add them to project.
+On Windows, you should be fine as long as you include all source, sound, and lib files
+to your project. This is currently untested on GNU/linux, but I have faith that it works. :)
+
+## Author
+
+- [Mark Sands](http://www.github.com/marksands) 
+- <marksands07@gmail.com> 
+- <http://www.twitter.com/marksands>
+
+## License
+
+See [License](http://github.com/marksands/Balto/blob/master/LICENSE)

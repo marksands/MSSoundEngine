@@ -1,10 +1,10 @@
 /***
- * Copyright (c) 2009 Mark Sands. All rights reserved.
+ * Copyright (c) 2009,2010 Mark Sands. All rights reserved.
  * September, 4 2009
  *
- * bALt - Basic openAL Toolkit
+ * Balto - Basic openAL Toolkit using OpenAL
  *
- * bALt - a lightweight OpenAL toolkit for Audio playback
+ * Balto - a lightweight OpenAL toolkit for Audio playback
  *	designed to encapsulate the low level audio handling
  *	and provide the user with a nice, easy to use
  *	high level application programming interface for
@@ -15,6 +15,7 @@
  * TODO:
  *			create an MP3Buffer.h
  *			see: http://en.wikipedia.org/wiki/MP3#File_structure
+ *			On play-from-pause resume play
  ***/
 
 #ifndef BALT_H_KBA7BAQ2
@@ -27,7 +28,7 @@
   #include <OpenAL/al.h>
   #include <OpenAL/alc.h>
 #else
-  #include <AL/al.h>
+  #include <AL/al.h>s
   #include <AL/alc.h>
 #endif
 
@@ -189,7 +190,6 @@
 
 	}
 
-
 	/*
 	 * Play( index, looping )
 	 * Last modified: 26Oct2009
@@ -203,7 +203,6 @@
 	 * 		optional	(optional) 	 in		specifies wether or not to loop the source
 	 *
 	 */
-	
 
 	void
 	AudioPlayer::Play( int index, bool looping )
@@ -216,12 +215,12 @@
 			altSourceData[num].INUSE = SOURCE_IN_USE;
 			playCount++;
 
-			// check if data hasn't been loaded into the Buffer
+				// check if data hasn't been loaded into the Buffer
 			ALint value; alGetBufferi( Buffers[ index ], AL_SIZE, &value );
 			if ( value <= 0 )
 				Buffers[index] = loadWAVFromFile( audioFiles[ index ] );
 
-			// set the source to the associated buffer
+				// set the source to the associated buffer
 			alSourceQueueBuffers( Sources[num], 1, &Buffers[ index ] );
 			alSourcei(Sources[num], AL_LOOPING, (looping ? AL_TRUE : AL_FALSE) );
 			alSourcePlay(Sources[num]);
@@ -242,8 +241,6 @@
 	 *
 	 */
 
-
-	// OpenAL Pause Sound, pauses all sounds in the buffer
 	void
 	AudioPlayer::Pause( int index )
 	{
@@ -264,7 +261,6 @@
 	 *
 	 */
 
-	// OpenAL Stop sound, stops all sounds in the buffer
 	void
 	AudioPlayer::Stop( int index )
 	{
@@ -286,7 +282,6 @@
 	 *
 	 */
 	
-
 	void
 	AudioPlayer::SetVolume( const int index,  const float volume)
 	{
