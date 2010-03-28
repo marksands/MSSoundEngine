@@ -58,7 +58,7 @@ char* ReadWAV( char *filename, SimpleWAVHeader *header ) {
 	if( file = fopen(filename, "rb") ) {
 		
 		fread( header, sizeof(SimpleWAVHeader), 1, file );
-		
+				
 		if (!( 
 			  memcmp("RIFF",header->riff,4) || 
 			  memcmp("WAVE",header->wave,4) || 
@@ -80,7 +80,7 @@ char* ReadWAV( char *filename, SimpleWAVHeader *header ) {
 	else {
 		printf("Audio rendering aborted! Failed to read %s\n", filename);
 	}
-	
+		
 	return 0;
 }
 
@@ -145,7 +145,7 @@ ALuint loadWAVFromFile( char* filename ) {
 	
 	char* data = ReadWAV( filename, &header );
 	buffer = CreateBufferFromWav( data, header );
-	
+		
 	return buffer;	
 }
 
@@ -219,9 +219,21 @@ ALuint loadWAVFromFile( char* filename ) {
 
 - (void) Load
 {
-	int i = 0;
+	int i = 0;	
+	
+	NSLog(@"Still loading?");
+	
+	// /Users/mark/Library/Application Support/iPhone Simulator/3.2/Applications/01758DA8-C81B-4C27-A037-580D2A127EE6/sound.app/sample.wav
+	char* filePath = "/Users/mark/Library/Application Support/iPhone Simulator/3.2/Applications/01758DA8-C81B-4C27-A037-580D2A127EE6/sound.app/sample.wav";
+	
+	Buffers[i] = loadWAVFromFile(filePath);
+	NSLog(@"finished loading!");
+
+	return;
+	
 	for(NSString *fname in audioFiles) {
-		Buffers[i] = [loadWAVFromFile fname];
+		Buffers[i] = loadWAVFromFile(filePath);
+		//Buffers[i] = loadWAVFromFile(fname);
 		i++;
 	}
 }
@@ -244,13 +256,23 @@ ALuint loadWAVFromFile( char* filename ) {
 
 - (void) PlayWithIndex:(int)index andLooping:(BOOL)looping
 {	
-	[self CleanSources];
+
+	
+	//[self CleanSources];
 	
 	int num = [self GetFreeSource];
+	
+	alSourceQueueBuffers(Sources[0], 1, &Buffers[0]);
+	alSourcei( Sources[0], AL_LOOPING, AL_TRUE);
+	alSourcePlay( Sources[0] );
+	return;
 	
 	if ( num != -1 ) {
 		// altSourceData[num].INUSE = SOURCE_IN_USE;
 		playCount++;
+		
+		NSLog(@"got this far in play!");
+
 		
 		// check if data hasn't been loaded into the Buffer
 		ALint value;
@@ -341,9 +363,10 @@ ALuint loadWAVFromFile( char* filename ) {
 
 - (ALuint) GetFreeSource
 {	
-	for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
+	for ( int i = 0; i < 256; i++ ) {
 		//if ( altSourceData[i].INUSE == SOURCE_FREE )
 		//	return i;
+		return 0;
 	}
 	return -1;
 }
@@ -403,7 +426,7 @@ ALuint loadWAVFromFile( char* filename ) {
 {
 	playCount = 0;
 	
-	for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
+	for ( int i = 0; i < 256; i++ ) {
 		//altSourceData[i].INUSE = SOURCE_FREE;
 	}
 	
@@ -417,7 +440,7 @@ ALuint loadWAVFromFile( char* filename ) {
 	alGetError();
 	
 	// generate NUM_BUFFERS Buffers for use
-	alGenBuffers(NUM_BUFFERS, Buffers);
+	alGenBuffers(256, Buffers);
 	
 	
 	const ALfloat position[3] = { 0.0f, 0.0f, 0.0f };
@@ -426,12 +449,12 @@ ALuint loadWAVFromFile( char* filename ) {
 
 	
 	// set our empty buffers to NULL
-	for ( int i = 0; i < (int)NUM_BUFFERS; i++) {
+	for ( int i = 0; i < 256; i++) {
 		Buffers[i] = NULL;
 	}
 	
 	// generate NUM_BUFFERS Sources for use
-	alGenSources(NUM_BUFFERS, Sources);
+	alGenSources(256, Sources);
 	
 	// we don't queue our buffers here yet, only during the playback call
 	for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
