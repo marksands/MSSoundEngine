@@ -1,4 +1,17 @@
-#include "../src/Balto.hpp"
+/***
+ * Copyright (c) 2009, 2010 Mark Sands. All rights reserved.
+ *
+ * This sample file demonstrates very basic usage of Balto.
+ * If you're using this to develop an audio player, I suggest
+ * you extend this library or use raw OpenAL yourself ;). 
+ * However, I find this library to be extremely helpful when
+ * creating OpenGL games that require basic sound rendering
+ * which relieves a lot of the programming and makes it a joy
+ * to use.
+ *
+ ***/
+
+#include "Balto.hpp"
 #include <unistd.h>
 
 const int THEME = 0;
