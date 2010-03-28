@@ -58,7 +58,7 @@ char* ReadWAV( char *filename, SimpleWAVHeader *header ) {
 	if( file = fopen(filename, "rb") ) {
 		
 		fread( header, sizeof(SimpleWAVHeader), 1, file );
-				
+		
 		if (!( 
 			  memcmp("RIFF",header->riff,4) || 
 			  memcmp("WAVE",header->wave,4) || 
@@ -80,7 +80,7 @@ char* ReadWAV( char *filename, SimpleWAVHeader *header ) {
 	else {
 		printf("Audio rendering aborted! Failed to read %s\n", filename);
 	}
-		
+	
 	return 0;
 }
 
@@ -117,7 +117,7 @@ ALuint CreateBufferFromWav( char* data, SimpleWAVHeader header ) {
 	alGenBuffers( 1, &buffer );
 	alBufferData( buffer, format, data, header.dataSize, header.samplesPerSec );
 	
-		// memory cleanup of pre-allocated data
+	// memory cleanup of pre-allocated data
 	free(data);
 	
 	return buffer;
@@ -145,7 +145,7 @@ ALuint loadWAVFromFile( char* filename ) {
 	
 	char* data = ReadWAV( filename, &header );
 	buffer = CreateBufferFromWav( data, header );
-		
+	
 	return buffer;	
 }
 
@@ -158,6 +158,7 @@ ALuint loadWAVFromFile( char* filename ) {
 
 @implementation Balto
 
+@synthesize audioFiles;
 
 /*
  * AudioPlayer( filenames, size )
@@ -174,10 +175,12 @@ ALuint loadWAVFromFile( char* filename ) {
  *
  */
 
-- (id) initWithFilename:(NSMutableArray*)filenames andSize:(int)size {
+- (id) initWithFiles:(NSMutableArray*)filenames andSize:(int)size {
 	
-	for(NSString *fname in filenames)
-		[audioFiles addObject:fname];
+	audioFiles = [[NSMutableArray alloc] initWithCapacity:size];
+	
+	for ( int i = 0; i < size; i++)
+		[audioFiles addObject:[filenames objectAtIndex:i]];
 	
 	if ( ![self InitSources] )
 		NSLog(@"Failed to initialize OpenAL");
@@ -202,6 +205,7 @@ ALuint loadWAVFromFile( char* filename ) {
 
 - (void) dealloc {
 	[super dealloc];
+	[audioFiles release];
 	[self Delete];
 }
 
@@ -214,26 +218,20 @@ ALuint loadWAVFromFile( char* filename ) {
  *
  * Returns:     <none>
  * Parameters: 	
- *							<none>
+ *				<none>
  */
 
 - (void) Load
 {
-	int i = 0;	
 	
-	NSLog(@"Still loading?");
-	
-	// /Users/mark/Library/Application Support/iPhone Simulator/3.2/Applications/01758DA8-C81B-4C27-A037-580D2A127EE6/sound.app/sample.wav
-	char* filePath = "/Users/mark/Library/Application Support/iPhone Simulator/3.2/Applications/01758DA8-C81B-4C27-A037-580D2A127EE6/sound.app/sample.wav";
-	
-	Buffers[i] = loadWAVFromFile(filePath);
-	NSLog(@"finished loading!");
+	for (int i = 0; i < (int)[audioFiles count]; i++ ) {
+				
+		const char* file = [[audioFiles objectAtIndex:i] UTF8String];
+		
+		//NSString *filePath = [[NSBundle mainBundle] pathForResource:@"sample" ofType:@"wav"];  
+		//const char* file = [[[NSBundle mainBundle] pathForResource:@"sample" ofType:@"wav"] UTF8String];
 
-	return;
-	
-	for(NSString *fname in audioFiles) {
-		Buffers[i] = loadWAVFromFile(filePath);
-		//Buffers[i] = loadWAVFromFile(fname);
+		Buffers[i] = loadWAVFromFile((char*)file);
 		i++;
 	}
 }
@@ -254,10 +252,8 @@ ALuint loadWAVFromFile( char* filename ) {
  */
 
 
-- (void) PlayWithIndex:(int)index andLooping:(BOOL)looping
+- (void) Play:(int)index andLooping:(BOOL)looping
 {	
-
-	
 	//[self CleanSources];
 	
 	int num = [self GetFreeSource];
@@ -272,13 +268,13 @@ ALuint loadWAVFromFile( char* filename ) {
 		playCount++;
 		
 		NSLog(@"got this far in play!");
-
+		
 		
 		// check if data hasn't been loaded into the Buffer
 		ALint value;
 		alGetBufferi( Buffers[index], AL_SIZE, &value );
 		if ( value <= 0 )
-			Buffers[num] = loadWAVFromFile([audioFiles objectAtIndex:index]);
+			Buffers[num] = loadWAVFromFile([[audioFiles objectAtIndex:index] UTF8String]);
 		
 		// set the source to the associated buffer
 		alSourceQueueBuffers( Sources[num], 1, &Buffers[index] );
@@ -303,7 +299,7 @@ ALuint loadWAVFromFile( char* filename ) {
 
 
 // OpenAL Pause Sound, pauses all sounds in the buffer
-- (void) PauseWithIndex:(int)index
+- (void) Pause:(int)index
 {
 	for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
 		alSourcePause( Sources[i] );
@@ -323,7 +319,7 @@ ALuint loadWAVFromFile( char* filename ) {
  */
 
 // OpenAL Stop sound, stops all sounds in the buffer
-- (void) StopWithindex:(int)index
+- (void) Stop:(int)index
 {
 	for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
 		alSourceStop( Sources[i] );
@@ -343,7 +339,7 @@ ALuint loadWAVFromFile( char* filename ) {
  *
  */
 
-- (void) SetVolumeWithIndex:(int)index andVolume:(float)volume
+- (void) SetVolume:(int)index andVolume:(float)volume
 {
 	for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
 		alSourcei( Sources[i], AL_GAIN, volume );
@@ -393,13 +389,13 @@ ALuint loadWAVFromFile( char* filename ) {
 		
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
 			//if ( altSourceData[i].INUSE == SOURCE_IN_USE ) {
-				alGetSourcei( Sources[i], AL_SOURCE_STATE, &state);
-				if ( state != AL_PLAYING ) {
-					alSourceStop( Sources[i] );
-					alSourcei( Sources[i], AL_BUFFER, NULL );
-					//altSourceData[i].INUSE = SOURCE_FREE;
-					playCount--;
-				}}//}
+			alGetSourcei( Sources[i], AL_SOURCE_STATE, &state);
+			if ( state != AL_PLAYING ) {
+				alSourceStop( Sources[i] );
+				alSourcei( Sources[i], AL_BUFFER, 0 );
+				//altSourceData[i].INUSE = SOURCE_FREE;
+				playCount--;
+			}}//}
 	}
 }
 
@@ -433,7 +429,7 @@ ALuint loadWAVFromFile( char* filename ) {
 	
 	Device = alcOpenDevice( (ALCchar*)"DirectSound3D" );
 	if (Device == NULL)
-		return false;
+		return AL_FALSE;
 	
 	Context = alcCreateContext(Device,NULL);
 	alcMakeContextCurrent(Context);
@@ -442,16 +438,13 @@ ALuint loadWAVFromFile( char* filename ) {
 	// generate NUM_BUFFERS Buffers for use
 	alGenBuffers(256, Buffers);
 	
-	
 	const ALfloat position[3] = { 0.0f, 0.0f, 0.0f };
 	const ALfloat velocity[3] = { 0.0f, 0.0f, 0.0f };	
 	const ALfloat orientation[5] = { 0.0f, 0.0f, 1.0f, 0.0f, -1.0f };
-
 	
 	// set our empty buffers to NULL
-	for ( int i = 0; i < 256; i++) {
-		Buffers[i] = NULL;
-	}
+	for ( int i = 0; i < 256; i++)
+		Buffers[i] = 0;
 	
 	// generate NUM_BUFFERS Sources for use
 	alGenSources(256, Sources);
@@ -469,7 +462,7 @@ ALuint loadWAVFromFile( char* filename ) {
 	if( alGetError() != AL_NO_ERROR)
 		return AL_FALSE;
 	
-	return true;
+	return AL_TRUE;
 }
 
 /*

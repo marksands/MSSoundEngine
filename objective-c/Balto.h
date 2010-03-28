@@ -17,6 +17,7 @@
  *			see: http://en.wikipedia.org/wiki/MP3#File_structure
  ***/
 
+#import <Foundation/Foundation.h>
 #import <OpenAL/al.h>
 #import <OpenAL/alc.h>
 #import <AudioToolbox/AudioToolbox.h>
@@ -44,7 +45,7 @@
 	ALuint Buffers[256];
 	ALuint Sources[256];
 	
-	NSMutableArray *SourceData;
+	int SourceData[256];
 		
 	int playCount;
 	char* filename;
@@ -52,13 +53,14 @@
 	NSMutableArray *audioFiles;
 }
 
+@property (nonatomic, retain) NSMutableArray* audioFiles;
 
-- (id) initWithFilename:(NSMutableArray*)filenames andSize:(int)size;
+- (id) initWithFiles:(NSMutableArray*)filenames andSize:(int)size;
 
-- (void) PlayWithIndex:(int)index andLooping:(BOOL)looping;
-- (void) PauseWithIndex:(int)index;
-- (void) StopWithIndex:(int)index;
-- (void) SetVolumeWithIndex:(int)index andVolume:(float)volume;	
+- (void) Play:(int)index andLooping:(BOOL)looping;
+- (void) Pause:(int)index;
+- (void) Stop:(int)index;
+- (void) SetVolume:(int)index andVolume:(float)volume;	
 
 - (void) Load;
 
