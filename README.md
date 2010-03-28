@@ -42,24 +42,28 @@ You can even stop the player.
 	
 ### Objective-C
 
-Add files to a char* array.
+Add files to a `NSMutableArray`.
 	
-	char* files[4] = { "gun1.wav", "gun2.wav", "bomb.wav", "theme.wav" };
-	
-Instantiate a new AudioPlayer object. The constructor takes the char* array of files as 
-its parameter along with the size of the array.
+	NSString *filePath = [[NSBundle mainBundle] pathForResource:@"sample" ofType:@"wav"];
 
-	Balto *b = [[Balto alloc] initWithFilenames:files andSize:4];
-	
-Play the theme song. Optionally set the loop flag to true.
-	
-	[b Play:THEME andLooping:YES];
-	
-Stop the player when finished and do some cleanup.
+	NSMutableArray *filenames = [[NSMutableArray alloc] initWithCapacity:1];
+	[filenames addObject:filePath];
 
-	[b Stop];	
-	[b release];
+Instantiate a new Balto object, initializing with the array of filenames and its capacity.
+
+	Balto *Player = [[Balto alloc] initWithFiles:filenames andSize:1];
+
+Play the theme song optionally setting the loop flag to true. And when we're finished, we stop
+the player and  do some cleanup.
+
+	[Player Play:THEME andLooping:YES];
 	
+		// ...	
+		
+	[Player Stop];
+	[Player release];
+	[filenames release];
+		
 Don't forget to check out the sample code in the examples directory.
 
 ## Build Process
