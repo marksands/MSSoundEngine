@@ -17,7 +17,6 @@
  *			see: http://en.wikipedia.org/wiki/MP3#File_structure
  ***/
 
-#import <Foundation/Foundation.h>
 #import <OpenAL/al.h>
 #import <OpenAL/alc.h>
 #import <AudioToolbox/AudioToolbox.h>
@@ -30,72 +29,52 @@
  *
  */ 
 
-@interface AudioPlayer : NSObject {
-
+@interface Balto : NSObject {
+	
 	// public: //
 	
-		ALCcontext *Context;
-		ALCdevice *Device;
-
-		enum SOURCE_STATES {
-		  SOURCE_IN_USE,
-			SOURCE_FREE
-		};
-
+	ALCcontext *Context;
+	ALCdevice *Device;
+	
+	enum {
+		SOURCE_IN_USE,
+		SOURCE_FREE
+	} SOURCE_STATES;
+	
 	// private: //
 	
-	 		// 256
-		ALuint NUM_BUFFERS;
-
- 		NSMutableArray *Buffers;
- 		NSMutableArray *Sources;
-
-		typedef struct {
-		  ALuint INUSE;				
-		} altSourceData_;
-		altSourceData_ altSourceData[256];
-
-		typedef struct {
-		  ALfloat position[256][3];
-		  ALfloat velocity[256][3];
-		} altSource_;
-		altSource_ altSource;
-
-		typedef struct {
-		  ALfloat position[3];
-		  ALfloat velocity[3];
-		  ALfloat orientation[6];
-		} altListener_;
-		altListener_ altListener;
-
-		int playCount;
-		char* filename;
+	// 256
+	ALuint NUM_BUFFERS;
+	
+	ALuint Buffers[256];
+	ALuint Sources[256];
+	
+	NSMutableArray *SourceData; // INUSE
 		
-		NSMutableDictionary *audioFiles;
+	int playCount;
+	char* filename;
+	
+	NSMutableArray *audioFiles;
 }
 
-@property (nonatomic, retain) NSMutableArray *Buffers;
-@property (nonatomic, retain) NSMutableArray *Sources;
-@property (nonatomic, retain) NSMutableDictionary *audioFiles;
+//@property (nonatomic) ALuint *Buffers;
+//@property (nonatomic) ALuint *Sources;
 
-	// public:
-	
-- (id) init withFilename:(NSArray*)filenames, andSize:(int)size;
+// public:
+- (id) init: withFilename:(NSArray*)filenames andSize:(int)size;
 
-- (void) Play( const int index = 1, bool looping = false);
-- (void) Pause( const int index = 1);
-- (void) Stop( const int index = 1);
-- (void) SetVolume( const int index = 1,  const float volume = 1.0f);	
+- (void) Play: withIndex:(int)index andLooping:(BOOL)looping;
+- (void) Pause: withIndex:(int)index;
+- (void) Stop: withIndex:(int)index;
+- (void) SetVolume: withIndex:(int)index andVolume:(float)volume;	
 
-- (void) Load();
+- (void) Load;
 
-	// protected:
+// protected:
 
-- (BOOL) InitSources();
-- (void) Delete();
-- (void) CleanSources();
-- (ALuint) GetFreeSource();
+- (BOOL) InitSources;
+- (void) Delete;
+- (void) CleanSources;
+- (ALuint) GetFreeSource;
 
 @end
-
-#endif /* end of include guard: BALT_H_KBA7BAQ2 */
