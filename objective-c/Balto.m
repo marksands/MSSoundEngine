@@ -178,6 +178,7 @@ ALuint loadWAVFromFile( char* filename ) {
 - (id) initWithFiles:(NSMutableArray*)filenames andSize:(int)size {
 	
 	audioFiles = [[NSMutableArray alloc] initWithCapacity:size];
+	playCount = 0;
 	
 	for ( int i = 0; i < size; i++)
 		[audioFiles addObject:[filenames objectAtIndex:i]];
@@ -203,11 +204,10 @@ ALuint loadWAVFromFile( char* filename ) {
  */
 
 - (void) Load
-{
+{		
 	for (int i = 0; i < (int)[audioFiles count]; i++ ) {
 		const char* file = [[audioFiles objectAtIndex:i] UTF8String];
 		Buffers[i] = loadWAVFromFile((char*)file);
-		i++;
 	}
 }
 
@@ -229,9 +229,9 @@ ALuint loadWAVFromFile( char* filename ) {
 - (void) Play:(int)index andLooping:(BOOL)looping
 {	
 	[self CleanSources];
-	
+		
 	int num = [self GetFreeSource];
-	
+		
 	if ( num != -1 ) {
 		altSourceData[num] = SOURCE_IN_USE;
 		playCount++;
@@ -342,10 +342,10 @@ ALuint loadWAVFromFile( char* filename ) {
 
 - (void) CleanSources
 {
-	if ( playCount >= (int)NUM_BUFFERS/2 ) {
+	if ( playCount >= 128 ) {
 		ALenum state;
 		
-		for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
+		for ( int i = 0; i < 256; i++ ) {
 			if ( altSourceData == SOURCE_IN_USE ) {
 			alGetSourcei( Sources[i], AL_SOURCE_STATE, &state);
 			if ( state != AL_PLAYING ) {
