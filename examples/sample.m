@@ -19,11 +19,12 @@ int main(int argc, char *argv[]) {
 	[filenames addObject:filePath];
 			
 	Balto *b = [[Balto alloc] initWithFiles:filenames andSize:1];
-	[b Play:0 andLooping:YES];
+	[b Play:0 andLooping:NO];
 	
 		// ... let the song play out
-	while(1);
+	sleep(30);
 	
+	[b Stop];
 	[filenames release];
 	[b release];
 		
