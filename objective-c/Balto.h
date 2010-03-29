@@ -54,7 +54,7 @@
 
 @property (nonatomic, retain) NSMutableArray* audioFiles;
 
-- (id) initWithFiles:(NSMutableArray*)filenames andSize:(int)size;
+- (id) initWithFiles:(NSMutableArray*)filenames;
 
 - (void) Play:(int)index andLooping:(BOOL)looping;
 - (void) Pause;

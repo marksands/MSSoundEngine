@@ -175,12 +175,12 @@ ALuint loadWAVFromFile( char* filename ) {
  *
  */
 
-- (id) initWithFiles:(NSMutableArray*)filenames andSize:(int)size {
+- (id) initWithFiles:(NSMutableArray*)filenames {
 	
-	audioFiles = [[NSMutableArray alloc] initWithCapacity:size];
+	audioFiles = [[NSMutableArray alloc] initWithCapacity:(int)[filenames count]];
 	playCount = 0;
 	
-	for ( int i = 0; i < size; i++)
+	for ( int i = 0; i < (int)[filenames count]; i++)
 		[audioFiles addObject:[filenames objectAtIndex:i]];
 	
 	if ( ![self InitSources] )
