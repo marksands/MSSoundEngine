@@ -6,6 +6,8 @@ Balto is a lightweight OpenAL toolkit for Audio playback designed to encapsulate
 
 Currently Balto is available in as a C++ library and as an Objective-C library, which makes it super easy to use on separate platforms like Windows, Mac, or iPhone. The API is the same across platforms, just check out the sample code to get an idea of how to get things up and running.
 
+Balto currently only renders WAV formatted files extended from RIFF.
+
 ## Usage
 
 ### C++
@@ -68,9 +70,12 @@ Don't forget to check out the sample code in the examples directory.
 
 ## Build Process
 
-On OS X, you just specify the `-framework OpenAL` option
+On OS X, you just specify the `-framework OpenAL` option.
 
 	g++ main.cc -framework OpenAL && ./a.out
+
+Be sure and add the OpenAL.framework to your existing project frameworks within Xcode if
+you're using the Objective-C library.
 
 On Windows, you should be fine as long as you include all source, sound, and lib files
 to your project. This is currently untested on GNU/linux, but I have faith that it works. :)

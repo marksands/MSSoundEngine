@@ -11,7 +11,7 @@
  *
  ***/
 
-#include "Balto.hpp"
+#include "../src/Balto.hpp"
 #include <unistd.h>
 
 const int THEME = 0;
@@ -24,6 +24,17 @@ int main (int argc, char const *argv[])
 	Player->Load();
 	
 	Player->Play( THEME, true );
+
+	sleep(5);
+	
+	for ( int i = 0; i < 10; i++)
+		Player->Play( THEME, true );
+		
+	sleep(5);
+	
+	for ( int i = 0; i < 10; i++)
+		Player->Play( THEME, true );
+
 				
 		// ... let the song play out
 	sleep(30);

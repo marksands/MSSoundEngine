@@ -39,7 +39,7 @@ typedef struct SimpleWAVHeader {
 
 //
 // ReadWAV( filename, header )
-// Last modified: 267Mar2010
+// Last modified: 26Mar2010
 //
 // the WAVBuffer method that reads the wav into the header
 // and returns the buffer data from the wav file
@@ -153,7 +153,7 @@ ALuint loadWAVFromFile( char* filename ) {
 /*
  *	Impelmentation
  *	of the Balto Class
- 8
+ *
  */
 
 @implementation Balto
@@ -162,7 +162,7 @@ ALuint loadWAVFromFile( char* filename ) {
 
 /*
  * AudioPlayer( filenames, size )
- * Last modified: 26Mar2010
+ * Last modified: 28Mar2010
  *
  * Default constructor lodas the filename array of songs.
  * Sets the NUM_BUFFERS to 256 maximum allowed buffers
@@ -185,34 +185,15 @@ ALuint loadWAVFromFile( char* filename ) {
 	if ( ![self InitSources] )
 		NSLog(@"Failed to initialize OpenAL");
 	
-	// Load files into buffers
+		// Preload files into buffers
 	[self Load];
 	
 	return self;
 }
 
-
-/*
- * ~AudioPlayer()
- * Last modified: 26Mar2010
- *
- * Default destructor calls the Delete() method
- *
- * Returns:     <none>
- * Parameters: 	<none>
- *
- */
-
-- (void) dealloc {
-	[super dealloc];
-	[audioFiles release];
-	[self Delete];
-}
-
-
 /*
  * Load()
- * Last modified: 26Mar2010
+ * Last modified: 28Mar2010
  *
  * Method to load all the audio sources into the Buffers
  *
@@ -223,14 +204,8 @@ ALuint loadWAVFromFile( char* filename ) {
 
 - (void) Load
 {
-	
 	for (int i = 0; i < (int)[audioFiles count]; i++ ) {
-				
 		const char* file = [[audioFiles objectAtIndex:i] UTF8String];
-		
-		//NSString *filePath = [[NSBundle mainBundle] pathForResource:@"sample" ofType:@"wav"];  
-		//const char* file = [[[NSBundle mainBundle] pathForResource:@"sample" ofType:@"wav"] UTF8String];
-
 		Buffers[i] = loadWAVFromFile((char*)file);
 		i++;
 	}
@@ -239,44 +214,29 @@ ALuint loadWAVFromFile( char* filename ) {
 
 /*
  * Play( index, looping )
- * Last modified: 26Mar2010
+ * Last modified: 28Mar2010
  *
  * Method to play the specified file index
  * This is where we want to queue our buffers
  * 
  * Returns:            <none>
  * Parameters: 	
- * 		index								 	 in		specified source from filenames array
- * 		optional	(optional) 	 in		specifies wether or not to loop the source
- *
+ * 		index					 	 in		specified source from filenames array
+ * 		optional		 		 in		specifies wether or not to loop the source
+ *	
  */
-
 
 - (void) Play:(int)index andLooping:(BOOL)looping
 {	
-	//[self CleanSources];
+	[self CleanSources];
 	
 	int num = [self GetFreeSource];
 	
-	alSourceQueueBuffers(Sources[0], 1, &Buffers[0]);
-	alSourcei( Sources[0], AL_LOOPING, AL_TRUE);
-	alSourcePlay( Sources[0] );
-	return;
-	
 	if ( num != -1 ) {
-		// altSourceData[num].INUSE = SOURCE_IN_USE;
+		altSourceData[num] = SOURCE_IN_USE;
 		playCount++;
 		
-		NSLog(@"got this far in play!");
-		
-		
-		// check if data hasn't been loaded into the Buffer
-		ALint value;
-		alGetBufferi( Buffers[index], AL_SIZE, &value );
-		if ( value <= 0 )
-			Buffers[num] = loadWAVFromFile([[audioFiles objectAtIndex:index] UTF8String]);
-		
-		// set the source to the associated buffer
+			// set the source to the associated buffer
 		alSourceQueueBuffers( Sources[num], 1, &Buffers[index] );
 		alSourcei(Sources[num], AL_LOOPING, (looping ? AL_TRUE : AL_FALSE) );
 		alSourcePlay(Sources[num]);
@@ -287,7 +247,7 @@ ALuint loadWAVFromFile( char* filename ) {
 
 /*
  * Pause( index )
- * Last modified: 26Mar2010
+ * Last modified: 28Mar2010
  *
  * Pauses all sounds in the buffer
  *
@@ -299,7 +259,7 @@ ALuint loadWAVFromFile( char* filename ) {
 
 
 // OpenAL Pause Sound, pauses all sounds in the buffer
-- (void) Pause:(int)index
+- (void) Pause
 {
 	for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
 		alSourcePause( Sources[i] );
@@ -308,7 +268,7 @@ ALuint loadWAVFromFile( char* filename ) {
 
 /*
  * Stop( index )
- * Last modified: 26Mar2010
+ * Last modified: 28Mar2010
  *
  * stops all sounds in the buffer
  *
@@ -319,7 +279,7 @@ ALuint loadWAVFromFile( char* filename ) {
  */
 
 // OpenAL Stop sound, stops all sounds in the buffer
-- (void) Stop:(int)index
+- (void) Stop
 {
 	for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
 		alSourceStop( Sources[i] );
@@ -327,19 +287,18 @@ ALuint loadWAVFromFile( char* filename ) {
 
 
 /*
- * SetVolume( index, volume )
- * Last modified: 26Mar2010
+ * SetVolume( volume )
+ * Last modified: 28Mar2010
  *
  * sets the volume from 0.0 to 1.0 (max)
  *
  * Returns:     <none>
  * Parameters:
- * 		index		    in		specified source from filenames array
  * 		volume	    in	  the gain of the volume, 0.0 to 1.0
  *
  */
 
-- (void) SetVolume:(int)index andVolume:(float)volume
+- (void) SetVolume:(float)volume
 {
 	for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
 		alSourcei( Sources[i], AL_GAIN, volume );
@@ -348,7 +307,7 @@ ALuint loadWAVFromFile( char* filename ) {
 
 /*
  * GetFreeSource()
- * Last modified: 26Mar2010
+ * Last modified: 28Mar2010
  *
  * Returns a free source from the sources buffer
  *
@@ -360,9 +319,8 @@ ALuint loadWAVFromFile( char* filename ) {
 - (ALuint) GetFreeSource
 {	
 	for ( int i = 0; i < 256; i++ ) {
-		//if ( altSourceData[i].INUSE == SOURCE_FREE )
-		//	return i;
-		return 0;
+		if ( altSourceData[i] == SOURCE_FREE )
+			return i;
 	}
 	return -1;
 }
@@ -370,7 +328,7 @@ ALuint loadWAVFromFile( char* filename ) {
 
 /*
  * CleanSources()
- * Last modified: 26Mar2010
+ * Last modified: 28Mar2010
  *
  * Resets finished sources to a free and available state.
  * Be sure to unqueue the unplayed buffers here.
@@ -388,21 +346,21 @@ ALuint loadWAVFromFile( char* filename ) {
 		ALenum state;
 		
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
-			//if ( altSourceData[i].INUSE == SOURCE_IN_USE ) {
+			if ( altSourceData == SOURCE_IN_USE ) {
 			alGetSourcei( Sources[i], AL_SOURCE_STATE, &state);
 			if ( state != AL_PLAYING ) {
 				alSourceStop( Sources[i] );
 				alSourcei( Sources[i], AL_BUFFER, 0 );
-				//altSourceData[i].INUSE = SOURCE_FREE;
+				altSourceData[i] == SOURCE_FREE;
 				playCount--;
-			}}//}
+			}}}
 	}
 }
 
 
 /*
  * InitSources()
- * Last modified: 27Mar2010
+ * Last modified: 28Mar2010
  *
  * Right now this is a nasty method
  * to initialize the sources from the
@@ -422,10 +380,8 @@ ALuint loadWAVFromFile( char* filename ) {
 {
 	playCount = 0;
 	
-	for ( int i = 0; i < 256; i++ ) {
-		//altSourceData[i].INUSE = SOURCE_FREE;
-	}
-	
+	for ( int i = 0; i < 256; i++ )
+		altSourceData[i] = SOURCE_FREE;
 	
 	Device = alcOpenDevice( (ALCchar*)"DirectSound3D" );
 	if (Device == NULL)
@@ -435,21 +391,21 @@ ALuint loadWAVFromFile( char* filename ) {
 	alcMakeContextCurrent(Context);
 	alGetError();
 	
-	// generate NUM_BUFFERS Buffers for use
+		// generate NUM_BUFFERS Buffers for use
 	alGenBuffers(256, Buffers);
 	
 	const ALfloat position[3] = { 0.0f, 0.0f, 0.0f };
 	const ALfloat velocity[3] = { 0.0f, 0.0f, 0.0f };	
 	const ALfloat orientation[5] = { 0.0f, 0.0f, 1.0f, 0.0f, -1.0f };
 	
-	// set our empty buffers to NULL
+		// set our empty buffers to NULL
 	for ( int i = 0; i < 256; i++)
 		Buffers[i] = 0;
 	
-	// generate NUM_BUFFERS Sources for use
+		// generate NUM_BUFFERS Sources for use
 	alGenSources(256, Sources);
 	
-	// we don't queue our buffers here yet, only during the playback call
+		// we don't queue our buffers here yet, only during the playback call
 	for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
 		alSourcefv(Sources[i], AL_POSITION, position);	
 		alSourcefv(Sources[i], AL_VELOCITY, velocity);
@@ -465,17 +421,18 @@ ALuint loadWAVFromFile( char* filename ) {
 	return AL_TRUE;
 }
 
+
 /*
  * Delete()
  * Last modified: 26Mar2010
  *
  * Deletes the OpenAL buffers and sources by
- * calling the OpenAL methods, also destorys
+ * calling the OpenAL methods, also destroys
  * the playback device
  * 
  * Returns:     <none>
  * Parameters:
- *    		    <none>
+ *    		      <none>
  */
 
 - (void) Delete
@@ -490,6 +447,24 @@ ALuint loadWAVFromFile( char* filename ) {
 	alcMakeContextCurrent(NULL);
 	alcDestroyContext(Context);
 	alcCloseDevice(Device);	
+}
+
+
+/*
+ * ~AudioPlayer()
+ * Last modified: 28Mar2010
+ *
+ * Dealloc does some cleanup and calls the Delete method
+ *
+ * Returns:     <none>
+ * Parameters: 	<none>
+ *
+ */
+
+- (void) dealloc {
+	[super dealloc];
+	[audioFiles release];
+	[self Delete];
 }
 
 @end

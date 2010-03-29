@@ -13,8 +13,7 @@
  ***
  *
  * TODO:
- *			create an MP3Buffer.h
- *			see: http://en.wikipedia.org/wiki/MP3#File_structure
+ *
  ***/
 
 #import <Foundation/Foundation.h>
@@ -45,7 +44,7 @@
 	ALuint Buffers[256];
 	ALuint Sources[256];
 	
-	int SourceData[256];
+	int altSourceData[256];
 		
 	int playCount;
 	char* filename;
@@ -58,9 +57,9 @@
 - (id) initWithFiles:(NSMutableArray*)filenames andSize:(int)size;
 
 - (void) Play:(int)index andLooping:(BOOL)looping;
-- (void) Pause:(int)index;
-- (void) Stop:(int)index;
-- (void) SetVolume:(int)index andVolume:(float)volume;	
+- (void) Pause;
+- (void) Stop;
+- (void) SetVolume:(float)volume;	
 
 - (void) Load;
 
