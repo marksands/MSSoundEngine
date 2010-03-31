@@ -16,10 +16,10 @@ Add files to a char* array.
 	
 	char* files[4] = { "gun1.wav", "gun2.wav", "bomb.wav", "theme.wav" };
 	
-Instantiate a new AudioPlayer object. The constructor takes the char* array of files as 
+Instantiate a new Balto object. The constructor takes the char* array of files as 
 its parameter along with the size of the array.
 	
-	MediaPlayer *Player = new AudioPlayer( files, 4 );
+	MediaPlayer *Player = new Balto( files, 4 );
 	
 Play the theme song. Optionally set the loop flag to true.
 	
@@ -29,13 +29,13 @@ Play a sound effect in sync with the theme and such; or pause all sounds.
 	
 	Player->Play( EXPLOSION );
 	
-		// ...
+	// ...
 	
 	Player->Pause();
 	
 Feel free to alter the sound, too.
 
-		// Set volume to half
+	// Set volume to half
 	Player->SetVolume( 0.5 );
 	
 You can even stop the player.
@@ -51,16 +51,16 @@ Add files to a `NSMutableArray`.
 	NSMutableArray *filenames = [[NSMutableArray alloc] initWithCapacity:1];
 	[filenames addObject:filePath];
 
-Instantiate a new Balto object, initializing with the array of filenames and its capacity.
+Instantiate a new Balto object, initializing with the array of filenames.
 
-	Balto *Player = [[Balto alloc] initWithFiles:filenames andSize:1];
+	Balto *Player = [[Balto alloc] initWithFiles:filenames];
 
 Play the theme song optionally setting the loop flag to true. And when we're finished, we stop
 the player and  do some cleanup.
 
 	[Player Play:THEME andLooping:YES];
 	
-		// ...	
+	// ...	
 		
 	[Player Stop];
 	[Player release];

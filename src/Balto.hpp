@@ -34,6 +34,7 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 #include "WavBuffer.hpp"
 
 	/*
@@ -64,11 +65,11 @@
 	 *
 	 */ 
 
-	class AudioPlayer: public MediaPlayer {
+	class Balto: public MediaPlayer {
 
 		public:
-			AudioPlayer( char* filenames[],  const int size = 1 );
-			virtual ~AudioPlayer();
+			Balto( char* filenames[],  const int size = 1 );
+			virtual ~Balto();
 
 			void Play( const int index = 1, bool looping = false);
 			void Pause( const int index = 1);
@@ -130,7 +131,7 @@
 
 
 	/*
-	 * AudioPlayer( filenames, size )
+	 * Balto( filenames, size )
 	 * Last modified: 26Mar2010
 	 *
 	 * Default constructor lodas the filename array of songs.
@@ -144,7 +145,7 @@
 	 *
 	 */
 	
-	AudioPlayer::AudioPlayer(char *filenames[], const int size) : NUM_BUFFERS(256) {
+	Balto::Balto(char *filenames[], const int size) : NUM_BUFFERS(256) {
 
 		for( int i = 0; i < size; i++ )
 			audioFiles.push_back( filenames[i] );
@@ -155,7 +156,7 @@
 
 
 	/*
-	 * ~AudioPlayer()
+	 * ~Balto()
 	 * Last modified: 16Sep2009
 	 *
 	 * Default destructor calls the Delete() method
@@ -165,7 +166,7 @@
 	 *
 	 */
 
-	AudioPlayer::~AudioPlayer() {
+	Balto::~Balto() {
 		Delete();
 	}
 
@@ -182,7 +183,7 @@
 	 */
 
 	void
-	AudioPlayer::Load()
+	Balto::Load()
 	{
 		for ( int i = 0; i < (int)audioFiles.size(); i++ ) {
 			Buffers[i] = loadWAVFromFile( audioFiles[ i ] );
@@ -205,7 +206,7 @@
 	 */
 
 	void
-	AudioPlayer::Play( int index, bool looping )
+	Balto::Play( int index, bool looping )
 	{	
 		CleanSources();
 		
@@ -242,7 +243,7 @@
 	 */
 
 	void
-	AudioPlayer::Pause( int index )
+	Balto::Pause( int index )
 	{
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
 			alSourcePause( Sources[i] );
@@ -262,7 +263,7 @@
 	 */
 
 	void
-	AudioPlayer::Stop( int index )
+	Balto::Stop( int index )
 	{
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
 			alSourceStop( Sources[i] );
@@ -283,7 +284,7 @@
 	 */
 	
 	void
-	AudioPlayer::SetVolume( const int index,  const float volume)
+	Balto::SetVolume( const int index,  const float volume)
 	{
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++ )
 			alSourcei( Sources[i], AL_GAIN, volume > 0 ? 1.0 : volume );
@@ -302,7 +303,7 @@
 	 */
 
 	ALuint
-	AudioPlayer::GetFreeSource()
+	Balto::GetFreeSource()
 	{	
 		for ( int i = 0; i < (int)NUM_BUFFERS; i++ ) {
 			if ( altSourceData[i].INUSE == SOURCE_FREE )
@@ -327,7 +328,7 @@
 	 */
 
 	void
-	AudioPlayer::CleanSources()
+	Balto::CleanSources()
 	{
 		if ( playCount >= (int)NUM_BUFFERS/2 ) {
 			ALenum state;
@@ -364,7 +365,7 @@
 	 */
 
 	bool
-	AudioPlayer::InitSources()
+	Balto::InitSources()
 	{
 		playCount = 0;
 
@@ -436,7 +437,7 @@
  	 */
  
 	void 
-	AudioPlayer::Delete() {
+	Balto::Delete() {
 
 		alDeleteBuffers(NUM_BUFFERS, Buffers);
 		alDeleteSources(NUM_BUFFERS, Sources);

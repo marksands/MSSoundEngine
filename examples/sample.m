@@ -18,13 +18,14 @@ int main(int argc, char *argv[]) {
 	NSMutableArray *filenames = [[NSMutableArray alloc] initWithCapacity:1];
 	[filenames addObject:filePath];
 			
-	Balto *b = [[Balto alloc] initWithFiles:filenames andSize:1];
+	Balto *b = [[Balto alloc] initWithFiles:filenames];
 	[b Play:0 andLooping:NO];
 	
-		// ... let the song play out
+	// ... let the song play out
 	sleep(30);
 	
 	[b Stop];
+	
 	[filenames release];
 	[b release];
 		
